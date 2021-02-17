@@ -73,3 +73,14 @@ fabric.properties
 # Docker
 Dockerfile
 docker-compose.yaml
+
+
+# JAVA NetBeans workspace
+parallel_JAVA/nbproject/private/
+parallel_JAVA/nbproject/Makefile-*.mk
+parallel_JAVA/nbproject/Package-*.bash
+parallel_JAVA/build/
+parallel_JAVA/nbbuild/
+parallel_JAVA/dist/
+parallel_JAVA/nbdist/
+parallel_JAVA/.nb-gradle/
