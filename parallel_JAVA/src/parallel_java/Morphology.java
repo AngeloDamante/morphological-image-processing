@@ -47,8 +47,8 @@ public class Morphology {
                      *  1, 1, 1]
                      */
                     boolean flag = false;   //this will be set if a pixel of reverse value is found in the mask
-                    for(int ty = y - 1; ty <= y + 1 && flag == false; ty++){
-                        for(int tx = x - 1; tx <= x + 1 && flag == false; tx++){
+                    for(int ty = y - 1; ty <= y + 1 && !flag; ty++){
+                        for(int tx = x - 1; tx <= x + 1 && !flag; tx++){
                             if(ty >= 0 && ty < height && tx >= 0 && tx < width){
                                 //origin of the mask is on the image pixels
                                 if(img.getRed(tx, ty) != targetValue){
@@ -58,7 +58,7 @@ public class Morphology {
                             }
                         }
                     }
-                    if(flag == false){
+                    if(!flag){
                         //all pixels inside the mask [i.e., kernel] were of targetValue
                         output[x+y*width] = targetValue;
                     }
@@ -86,6 +86,7 @@ public class Morphology {
      * This method will perform dilation operation on the grayscale image img.
      * 
      * @param img The image on which dilation operation is performed
+     * @return copy of dilated image
      */
     public static MyOwnImage Dilation_grayscale(MyOwnImage img){
         /**
@@ -143,6 +144,7 @@ public class Morphology {
      * @param img The image on which dilation operation is performed
      * @param mask the square mask.
      * @param maskSize the size of the square mask. [i.e., number of rows]
+     * @return copy of dilated image
      */
     public static MyOwnImage Dilation_grayscale(MyOwnImage img, int mask[], int maskSize){
         /**
@@ -243,8 +245,8 @@ public class Morphology {
                      *  1, 1, 1]
                      */
                     boolean flag = false;   //this will be set if a pixel of reverse value is found in the mask
-                    for(int ty = y - 1; ty <= y + 1 && flag == false; ty++){
-                        for(int tx = x - 1; tx <= x + 1 && flag == false; tx++){
+                    for(int ty = y - 1; ty <= y + 1 && !flag; ty++){
+                        for(int tx = x - 1; tx <= x + 1 && !flag; tx++){
                             if(ty >= 0 && ty < height && tx >= 0 && tx < width){
                                 //origin of the mask is on the image pixels
                                 if(img.getRed(tx, ty) != targetValue){
@@ -254,7 +256,7 @@ public class Morphology {
                             }
                         }
                     }
-                    if(flag == false){
+                    if(!flag){
                         //all pixels inside the mask [i.e., kernel] were of targetValue
                         output[x+y*width] = targetValue;
                     }
@@ -280,6 +282,7 @@ public class Morphology {
      * This method will perform erosion operation on the grayscale image img.
      * 
      * @param img The image on which erosion operation is performed
+     * @return copy of eroded image
      */
     public static MyOwnImage Erosion_grayscale(MyOwnImage img){
         /**
@@ -343,6 +346,7 @@ public class Morphology {
      * @param img The image on which erosion operation is performed
      * @param mask the square mask.
      * @param maskSize the size of the square mask. [i.e., number of rows]
+     * @return copy of eroded image
      */
     public static MyOwnImage Erosion_grayscale(MyOwnImage img, int mask[], int maskSize){
         /**
