@@ -3,7 +3,8 @@ project(MM LANGUAGES CXX CUDA)
 
 # src libraries
 include_directories(tool images)
-set(SOURCE_FILE tool/CImg.h)
+set(SOURCE_FILE tool/CImg.h 
+    tool/Image.h tool/Image.cpp)
 add_library(lib STATIC ${SOURCE_FILE})
 
 # C++

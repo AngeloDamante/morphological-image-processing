@@ -1,6 +1,10 @@
 #include "CImg.h"
+#include "Image.h"
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
 int main(int argc, char const *argv[]) {
-    /* code */
+
     return 0;
 }
