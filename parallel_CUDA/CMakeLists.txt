@@ -3,8 +3,8 @@ project(MM LANGUAGES CXX CUDA)
 
 # src libraries
 include_directories(tool images)
-set(SOURCE tool/CImg.h)
-add_library(lib STATIC ${SOURCE})
+set(SOURCE_FILE tool/CImg.h)
+add_library(lib STATIC ${SOURCE_FILE})
 
 # C++
 set(CMAKE_CXX_COMPILER)
