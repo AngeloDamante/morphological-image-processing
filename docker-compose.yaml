@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  mmProject:
+    container_name: 'mmProject'
+    build: .
+    image: base
+    volumes:
+      - ./parallel_CUDA:/parallelVersion
+      - ./images:/images
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIESA=all
+      - nvcc-arch=sm_52 -v -Xcompiler="-pthread"
