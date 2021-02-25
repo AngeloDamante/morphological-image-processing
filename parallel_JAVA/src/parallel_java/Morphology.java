@@ -8,6 +8,10 @@ package parallel_java;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -93,7 +97,17 @@ public class Morphology {
      * @return copy of dilated image
      */
     public static MyOwnImage Dilation_grayscale(MyOwnImage img){
-        return Dilation_grayscale(img, 4); //Assume majority of hardware have 4 cores at least
+        return Dilation_grayscale(img, Runtime.getRuntime().availableProcessors()); //Assume majority of hardware have 4 cores at least
+    }
+    
+    /**
+     * Returns integer clamped value between 0 and max
+     * @param num target number
+     * @param max max value
+     * @return 
+     */
+    private static int checkThreadsNum(int num, int max){
+        return Math.max(0, Math.min(max, num));
     }
     
     /**
@@ -104,48 +118,28 @@ public class Morphology {
      * @return copy of dilated image
      */
     public static MyOwnImage Dilation_grayscale(MyOwnImage img, int num_ths){
-        /**
-         * Dimension of the image img.
-         */
         int width = img.getImageWidth();
         int height = img.getImageHeight();
+        num_ths = checkThreadsNum(height, num_ths);
         
         if (num_ths < 0)
             num_ths = 0;
         if (num_ths > height)
             num_ths = height;
         
-        //output of dilation
+        //Save output of dilation
         int output[] = new int[width*height];
-        List<MaskApplier> pool = new ArrayList<>();
+        ExecutorService taskExecutor = Executors.newFixedThreadPool(num_ths);
         int rows_per_thread = (int)Math.floor((double)(height/num_ths));
-        //perform dilation
-        int end_y = 0;
-        
-        
-        //Create pool
+        //Populate pool
         for(int y = 0; y < height; y += rows_per_thread){
-            end_y = Math.min(y + rows_per_thread, height);
-            MaskApplier t = new MaskApplier(img, output, y, end_y, width, height);
-            pool.add(t);
-            t.start();
+            MaskApplier t = new MaskApplier(img, output, y, Math.min(y + rows_per_thread, height), width, height);
+            taskExecutor.execute(t);
         }
         //Barrier
-        pool.forEach(t -> {
-            try 
-            {
-                t.join();
-            }
-            catch (InterruptedException e) 
-            {
-                System.err.println("join() interrupted");
-            }
-        });
-        
-        MyOwnImage image = new MyOwnImage(img); // Create a copy in order to work on copied one
-        /**
-         * Save the erosion value in image img.
-         */
+        waitExecutors(taskExecutor);
+        //Copy results to new image
+        MyOwnImage image = new MyOwnImage(img);
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
                 int v = output[x+y*width];
@@ -153,6 +147,15 @@ public class Morphology {
             }
         }
         return image;
+    }
+    
+    private static void waitExecutors(ExecutorService taskExecutor){
+        taskExecutor.shutdown();
+        try {
+          taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+          System.err.println("join() interrupted: " + e.toString());
+        }
     }
     
     /**
