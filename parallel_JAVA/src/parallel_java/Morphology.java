@@ -146,6 +146,10 @@ public class Morphology {
      * @return copy of dilated image
      */
     public static MyOwnImage Dilation_grayscale(MyOwnImage img, int num_ths, int mask[], int maskSize){
+        return ExecuteMaskOnImage(img, num_ths, mask, maskSize, true);
+    }
+    
+    private static MyOwnImage ExecuteMaskOnImage(MyOwnImage img, int num_ths, int mask[], int maskSize, boolean dilation){
         int width = img.getImageWidth();
         int height = img.getImageHeight();
         num_ths = checkThreadsNum(height, num_ths);
@@ -157,7 +161,7 @@ public class Morphology {
         
         //Populate pool
         for(int y = 0; y < height; y += rows_per_thread){
-            MaskApplier t = new MaskApplier(img, output, y, Math.min(y + rows_per_thread, height), width, height, mask, maskSize);
+            MaskApplier t = new MaskApplier(img, output, y, Math.min(y + rows_per_thread, height), width, height, mask, maskSize, dilation);
             taskExecutor.execute(t);
         }
         
@@ -247,133 +251,37 @@ public class Morphology {
     }
     
     /**
-     * This method will perform erosion operation on the grayscale image img.
+     * This method will perform erosion operation on the grayscale image img. with default mask and on CPU cores.
      * 
-     * @param img The image on which erosion operation is performed
-     * @return copy of eroded image
+     * @param img The image on which dilation operation is performed
+     * @return copy of dilated image
      */
-    public static MyOwnImage Erosion_grayscale(MyOwnImage img){
-        /**
-         * Dimension of the image img.
-         */
-        int width = img.getImageWidth();
-        int height = img.getImageHeight();
-        
-        //buff
-        int buff[];
-        
-        //output of erosion
-        int output[] = new int[width*height];
-        
-        //perform erosion
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                buff = new int[9];
-                int i = 0;
-                for(int ty = y - 1; ty <= y + 1; ty++){
-                   for(int tx = x - 1; tx <= x + 1; tx++){
-                       /**
-                        * 3x3 mask [kernel or structuring element]
-                        * [1, 1, 1
-                        *  1, 1, 1
-                        *  1, 1, 1]
-                        */
-                       if(ty >= 0 && ty < height && tx >= 0 && tx < width){
-                           //pixel under the mask
-                           buff[i] = img.getRed(tx, ty);
-                           i++;
-                       }
-                   }
-                }
-                
-                //sort buff
-                java.util.Arrays.sort(buff);
-                
-                //save lowest value
-                output[x+y*width] = buff[9-i];
-            }
-        }
-        MyOwnImage image = new MyOwnImage(img); // Create a copy in order to work on copied one
-        /**
-         * Save the erosion value in image img.
-         */
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                int v = output[x+y*width];
-                image.setPixel(x, y, 255, v, v, v);
-            }
-        }
-        return image;
+        public static MyOwnImage Erosion_grayscale(MyOwnImage img){
+        return Erosion_grayscale(img, Runtime.getRuntime().availableProcessors()); //Assume majority of hardware have 4 cores at least
     }
     
     /**
-     * This method will perform erosion operation on the grayscale image img.
-     * It will find the minimum value among the pixels that are under the mask [element value 1] and will
-     * set the origin to the minimum value.
+     * This method will perform erosion operation on the grayscale image img with given thread number.
      * 
-     * @param img The image on which erosion operation is performed
+     * @param img The image on which dilation operation is performed
+     * @param num_ths Number of threads to start with
+     * @return copy of dilated image
+     */
+    public static MyOwnImage Erosion_grayscale(MyOwnImage img, int num_ths){
+        return Erosion_grayscale(img, num_ths, new int[]{1,1,1,1,1,1,1,1,1}, 3);
+    }
+    
+    /**
+     * This method will perform erosion operation on the grayscale image img.It will find the maximum value among the pixels that are under the mask [element value 1] and will
+ set the origin to the maximum value.
+     * 
+     * @param img The image on which dilation operation is performed
+     * @param num_ths Number of threads to run on
      * @param mask the square mask.
      * @param maskSize the size of the square mask. [i.e., number of rows]
-     * @return copy of eroded image
+     * @return copy of dilated image
      */
-    public static MyOwnImage Erosion_grayscale(MyOwnImage img, int mask[], int maskSize){
-        /**
-         * Dimension of the image img.
-         */
-        int width = img.getImageWidth();
-        int height = img.getImageHeight();
-        
-        //buff
-        int buff[];
-        
-        //output of erosion
-        int output[] = new int[width*height];
-        
-        //perform erosion
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                buff = new int[maskSize * maskSize];
-                int i = 0;
-                for(int ty = y - maskSize/2, mr = 0; ty <= y + maskSize/2; ty++, mr++){
-                   for(int tx = x - maskSize/2, mc = 0; tx <= x + maskSize/2; tx++, mc++){
-                       /**
-                        * Sample 3x3 mask [kernel or structuring element]
-                        * [0, 1, 0
-                        *  1, 1, 1
-                        *  0, 1, 0]
-                        * 
-                        * Only those pixels of the image img that are under the mask element 1 are considered.
-                        */
-                       if(ty >= 0 && ty < height && tx >= 0 && tx < width){
-                           //pixel under the mask
-                           
-                           if(mask[mc+mr*maskSize] != 1){
-                               continue;
-                           }
-                           
-                           buff[i] = img.getRed(tx, ty);
-                           i++;
-                       }
-                   }
-                }
-                
-                //sort buff
-                java.util.Arrays.sort(buff);
-                
-                //save lowest value
-                output[x+y*width] = buff[(maskSize*maskSize) - i];
-            }
-        }
-        MyOwnImage image = new MyOwnImage(img); // Create a copy in order to work on copied one
-        /**
-         * Save the erosion value in image img.
-         */
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                int v = output[x+y*width];
-                image.setPixel(x, y, 255, v, v, v);
-            }
-        }
-        return image;
+    public static MyOwnImage Erosion_grayscale(MyOwnImage img, int num_ths, int mask[], int maskSize){
+        return ExecuteMaskOnImage(img, num_ths, mask, maskSize, false);
     }
 }
