@@ -6,6 +6,10 @@
 package parallel_java;
 //import java.lang.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 /**
  *
  * @author Fabian Greavu
@@ -89,40 +93,55 @@ public class Morphology {
      * @return copy of dilated image
      */
     public static MyOwnImage Dilation_grayscale(MyOwnImage img){
+        return Dilation_grayscale(img, 4); //Assume majority of hardware have 4 cores at least
+    }
+    
+    /**
+     * This method will perform dilation operation on the grayscale image img.
+     * 
+     * @param img The image on which dilation operation is performed
+     * @param num_ths Number of threads to start with
+     * @return copy of dilated image
+     */
+    public static MyOwnImage Dilation_grayscale(MyOwnImage img, int num_ths){
         /**
          * Dimension of the image img.
          */
         int width = img.getImageWidth();
         int height = img.getImageHeight();
         
-        //buff
-        int buff[];
+        if (num_ths < 0)
+            num_ths = 0;
+        if (num_ths > height)
+            num_ths = height;
         
         //output of dilation
         int output[] = new int[width*height];
-        
+        List<MaskApplier> pool = new ArrayList<>();
+        int rows_per_thread = (int)Math.floor((double)(height/num_ths));
         //perform dilation
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                buff = new int[9];
-                int i = 0;
-                for(int ty = y - 1; ty <= y + 1; ty++){
-                   for(int tx = x - 1; tx <= x + 1; tx++){
-                       if(ty >= 0 && ty < height && tx >= 0 && tx < width){
-                           //pixel under the mask
-                           buff[i] = img.getRed(tx, ty);
-                           i++;
-                       }
-                   }
-                }
-                
-                //sort buff
-                java.util.Arrays.sort(buff);
-                
-                //save highest value
-                output[x+y*width] = buff[8];
-            }
+        int end_y = 0;
+        
+        
+        //Create pool
+        for(int y = 0; y < height; y += rows_per_thread){
+            end_y = Math.min(y + rows_per_thread, height);
+            MaskApplier t = new MaskApplier(img, output, y, end_y, width, height);
+            pool.add(t);
+            t.start();
         }
+        //Barrier
+        pool.forEach(t -> {
+            try 
+            {
+                t.join();
+            }
+            catch (InterruptedException e) 
+            {
+                System.err.println("join() interrupted");
+            }
+        });
+        
         MyOwnImage image = new MyOwnImage(img); // Create a copy in order to work on copied one
         /**
          * Save the erosion value in image img.
