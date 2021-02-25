@@ -12,7 +12,6 @@ package parallel_java;
  * for the sequential version
  */
 public class Parallel_JAVA {
-
     /**
      * @param args the command line arguments
      */
@@ -34,40 +33,76 @@ public class Parallel_JAVA {
         image_bin.readImage(image_fn);
         
         
-        execute_dilation_one(image_gs);
-        execute_dilation_multiple_threads(image_gs);
+        execute_multiple_threads(image_gs, MorphOp.Dilation);
+        execute_multiple_threads(image_gs, MorphOp.Erosion);
         
-        execute_dilation_one_binary(image_bin);
-        execute_erosion_one_binary(image_bin);
+        execute_multiple_threads_binary(image_bin, MorphOp.Dilation);
+        execute_multiple_threads_binary(image_bin, MorphOp.Erosion);
+        
+        execute_one_Thread(image_gs, MorphOp.Dilation);
+        execute_one_Thread(image_gs, MorphOp.Erosion);
+        
+        execute_one_Thread_binary(image_bin, MorphOp.Dilation);
+        execute_one_Thread_binary(image_bin, MorphOp.Erosion);
     }
     
-    private static void execute_dilation_one_binary(MyOwnImage image_bin){
-        Morphology.Dilation_binary(image_bin, true).writeImage("dilated_binary_image.png");
-        //Morphology.Erosion_binary(image_bin, false).writeImage("eroded_binary_image.png");
-    }
-    
-    private static void execute_erosion_one_binary(MyOwnImage image_bin){
-        Morphology.Dilation_binary(image_bin, true).writeImage("dilated_binary_image.png");
-        //Morphology.Erosion_binary(image_bin, false).writeImage("eroded_binary_image.png");
-    }
-    
-    private static void execute_dilation_one(MyOwnImage image_gs){
-        long startTime, duration;
-        startTime = System.nanoTime();
-        Morphology.Dilation_grayscale(image_gs).writeImage("dilated_grazyscale_image.png");
-        duration = (System.nanoTime() - startTime);
-        System.out.println(String.format("|%10d|%10d|", 1, duration/1000000));
-    }
-    
-    private static void execute_dilation_multiple_threads(MyOwnImage image_gs){
+    private static void execute_multiple_threads_binary(MyOwnImage image_bin, MorphOp operation){
         long startTime, duration;
         int[] threads_count = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 20, 32, 40, 50, 64, 128, 256, 512, 1024};
         int[] mask = new int[]{1,1,1,1,1,1,1,1,1};
         int maskSize = 3;
+        System.out.println("Binary " + (operation == MorphOp.Dilation ? "Dilation:" : "Erosion:"));
         System.out.println("| Threads  | Time (ms)|");
         for (int i = 0; i < threads_count.length; i++) {
             startTime = System.nanoTime();
-            Morphology.Dilation_grayscale(image_gs, threads_count[i], mask, maskSize);
+            if (operation == MorphOp.Dilation)
+                Morphology.Dilation_binary(image_bin, true, threads_count[i], mask, maskSize);
+            else
+                Morphology.Erosion_binary(image_bin, false, threads_count[i], mask, maskSize);
+            duration = (System.nanoTime() - startTime);
+            System.out.println(String.format("|%10d|%10d|", threads_count[i], duration/1000000));
+        }
+    }
+    
+    private static void execute_one_Thread(MyOwnImage image_gs, MorphOp operation){
+        long startTime, duration;
+        startTime = System.nanoTime();
+        System.out.println("Grayscale " + (operation == MorphOp.Dilation ? "Dilation:" : "Erosion:"));
+        System.out.println("| Threads  | Time (ms)|");
+        if (operation == MorphOp.Dilation)
+            Morphology.Dilation_grayscale(image_gs).writeImage("dilated_grayscale_image.png");
+        else
+            Morphology.Erosion_grayscale(image_gs).writeImage("eroded_grayscale_image.png");
+        duration = (System.nanoTime() - startTime);
+        System.out.println(String.format("|%10d|%10d|", 1, duration/1000000));
+    }
+    
+    private static void execute_one_Thread_binary(MyOwnImage image_gs, MorphOp operation){
+        long startTime, duration;
+        startTime = System.nanoTime();
+        System.out.println("Binary " + (operation == MorphOp.Dilation ? "Dilation:" : "Erosion:"));
+        System.out.println("| Threads  | Time (ms)|");
+        if (operation == MorphOp.Dilation)
+            Morphology.Dilation_binary(image_gs, true).writeImage("dilated_binary_image.png");
+        else
+            Morphology.Erosion_binary(image_gs, false).writeImage("eroded_binary_image.png");
+        duration = (System.nanoTime() - startTime);
+        System.out.println(String.format("|%10d|%10d|", 1, duration/1000000));
+    }
+    
+    private static void execute_multiple_threads(MyOwnImage image_gs, MorphOp operation){
+        long startTime, duration;
+        int[] threads_count = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 20, 32, 40, 50, 64, 128, 256, 512, 1024};
+        int[] mask = new int[]{1,1,1,1,1,1,1,1,1};
+        int maskSize = 3;
+        System.out.println("Grayscale " + (operation == MorphOp.Dilation ? "Dilation:" : "Erosion:"));
+        System.out.println("| Threads  | Time (ms)|");
+        for (int i = 0; i < threads_count.length; i++) {
+            startTime = System.nanoTime();
+            if (operation == MorphOp.Dilation)
+                Morphology.Dilation_grayscale(image_gs, threads_count[i], mask, maskSize);
+            else
+                Morphology.Erosion_grayscale(image_gs, threads_count[i], mask, maskSize);
             duration = (System.nanoTime() - startTime);
             System.out.println(String.format("|%10d|%10d|", threads_count[i], duration/1000000));
         }

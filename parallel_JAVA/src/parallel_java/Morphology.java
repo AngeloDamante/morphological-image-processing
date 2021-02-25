@@ -6,9 +6,6 @@
 package parallel_java;
 //import java.lang.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -19,68 +16,101 @@ import java.util.concurrent.TimeUnit;
  * @author Fabian Greavu
  */
 public class Morphology {
+    /**
+     * Executes erosion on a binary image.
+     * @param img
+     * @param ExecuteOnBackgroundPixel
+     * @return 
+     */
+    public static MyOwnImage Erosion_binary(MyOwnImage img, boolean ExecuteOnBackgroundPixel){
+        return Erosion_binary(img, ExecuteOnBackgroundPixel, Runtime.getRuntime().availableProcessors());
+    }
     
-    public static MyOwnImage Dilation_binary(MyOwnImage img, boolean dilateBackgroundPixel){
+    /**
+     * Executes erosion on a binary image.
+     * @param img
+     * @param ExecuteOnBackgroundPixel
+     * @param num_ths
+     * @return 
+     */
+    public static MyOwnImage Erosion_binary(MyOwnImage img, boolean ExecuteOnBackgroundPixel, int num_ths){
+        return Erosion_binary(img, ExecuteOnBackgroundPixel, num_ths, new int[]{1,1,1,1,1,1,1,1,1}, 3);
+    }
+    
+    /**
+     * Executes erosion on a binary image.
+     * @param img
+     * @param ExecuteOnBackgroundPixel
+     * @param num_ths
+     * @param mask
+     * @param maskSize
+     * @return 
+     */
+    public static MyOwnImage Erosion_binary(MyOwnImage img, boolean ExecuteOnBackgroundPixel, int num_ths, int mask[], int maskSize){
+        return ExecuteMaskOnBinaryImage(img, num_ths, mask, maskSize, MorphOp.Erosion, ExecuteOnBackgroundPixel);
+    }
+    
+    /**
+     * Executes dilation on a binary image.
+     * @param img
+     * @param ExecuteOnBackgroundPixel
+     * @return 
+     */
+    public static MyOwnImage Dilation_binary(MyOwnImage img, boolean ExecuteOnBackgroundPixel){
+        return Dilation_binary(img, ExecuteOnBackgroundPixel, Runtime.getRuntime().availableProcessors());
+    }
+    
+    /**
+     * Executes dilation on a binary image.
+     * @param img
+     * @param ExecuteOnBackgroundPixel
+     * @param num_ths
+     * @return 
+     */
+    public static MyOwnImage Dilation_binary(MyOwnImage img, boolean ExecuteOnBackgroundPixel, int num_ths){
+        return Dilation_binary(img, ExecuteOnBackgroundPixel, num_ths, new int[]{1,1,1,1,1,1,1,1,1}, 3);
+    }
+    
+    /**
+     * Executes dilation on a binary image.
+     * @param img
+     * @param ExecuteOnBackgroundPixel
+     * @param num_ths
+     * @param mask
+     * @param maskSize
+     * @return 
+     */
+    public static MyOwnImage Dilation_binary(MyOwnImage img, boolean ExecuteOnBackgroundPixel, int num_ths, int mask[], int maskSize){
+        return ExecuteMaskOnBinaryImage(img, num_ths, mask, maskSize, MorphOp.Dilation, ExecuteOnBackgroundPixel);
+    }
+    
+    
+    private static MyOwnImage ExecuteMaskOnBinaryImage(MyOwnImage img, int num_ths, int mask[], int maskSize, MorphOp operation, boolean ExecuteOnBackgroundPixel){
         int width = img.getImageWidth();
         int height = img.getImageHeight();
+        num_ths = checkThreadsNum(height, num_ths);
         
-        /**
-         * This will hold the dilation result which will be copied to image img.
-         */
+        //Save output of dilation
         int output[] = new int[width * height];
+        ExecutorService taskExecutor = Executors.newFixedThreadPool(num_ths);
+        int rows_per_thread = (int)Math.floor((double)(height/num_ths));
         
-        /**
-         * If dilation is to be performed on BLACK pixels then
-         * targetValue = 0
-         * else
-         * targetValue = 255;  //for WHITE pixels
-         */
-        int targetValue = (dilateBackgroundPixel == true)?0:255;
-        
-        /**
-         * If the target pixel value is WHITE (255) then the reverse pixel value will
-         * be BLACK (0) and vice-versa.
-         */
-        int reverseValue = (targetValue == 255)?0:255;
-        
-        //perform dilation
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                //For BLACK pixel RGB all are set to 0 and for WHITE pixel all are set to 255.
-                if(img.getRed(x, y) == targetValue){
-                    /**
-                     * We are using a 3x3 kernel
-                     * [1, 1, 1
-                     *  1, 1, 1
-                     *  1, 1, 1]
-                     */
-                    boolean flag = false;   //this will be set if a pixel of reverse value is found in the mask
-                    for(int ty = y - 1; ty <= y + 1 && !flag; ty++){
-                        for(int tx = x - 1; tx <= x + 1 && !flag; tx++){
-                            if(ty >= 0 && ty < height && tx >= 0 && tx < width){
-                                //origin of the mask is on the image pixels
-                                if(img.getRed(tx, ty) != targetValue){
-                                    flag = true;
-                                    output[x+y*width] = reverseValue;
-                                }
-                            }
-                        }
-                    }
-                    if(!flag){
-                        //all pixels inside the mask [i.e., kernel] were of targetValue
-                        output[x+y*width] = targetValue;
-                    }
-                }else{
-                    output[x+y*width] = reverseValue;
-                }
-            }
+        //Populate pool
+        for(int y = 0; y < height; y += rows_per_thread){
+            BinaryMaskApplier t = new BinaryMaskApplier(img, output, y, Math.min(y + rows_per_thread, height), width, height, mask, maskSize, operation, ExecuteOnBackgroundPixel);
+            taskExecutor.execute(t);
         }
         
-        MyOwnImage image = new MyOwnImage(img); // Create a copy in order to work on copied one
+        //Barrier
+        waitExecutors(taskExecutor);
         
-        /**
-         * Save the dilation value in new image.
-         */
+        //Copy results to new image
+        return CreateImage(new MyOwnImage(img), output);
+    }
+    
+    private static MyOwnImage CreateImage(MyOwnImage image, int[] output){
+        int width = image.getImageWidth();
+        int height = image.getImageHeight();
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
                 int v = output[x+y*width];
@@ -146,10 +176,10 @@ public class Morphology {
      * @return copy of dilated image
      */
     public static MyOwnImage Dilation_grayscale(MyOwnImage img, int num_ths, int mask[], int maskSize){
-        return ExecuteMaskOnImage(img, num_ths, mask, maskSize, true);
+        return ExecuteMaskOnImage(img, num_ths, mask, maskSize, MorphOp.Dilation);
     }
     
-    private static MyOwnImage ExecuteMaskOnImage(MyOwnImage img, int num_ths, int mask[], int maskSize, boolean dilation){
+    private static MyOwnImage ExecuteMaskOnImage(MyOwnImage img, int num_ths, int mask[], int maskSize, MorphOp operation){
         int width = img.getImageWidth();
         int height = img.getImageHeight();
         num_ths = checkThreadsNum(height, num_ths);
@@ -161,7 +191,7 @@ public class Morphology {
         
         //Populate pool
         for(int y = 0; y < height; y += rows_per_thread){
-            MaskApplier t = new MaskApplier(img, output, y, Math.min(y + rows_per_thread, height), width, height, mask, maskSize, dilation);
+            MaskApplier t = new MaskApplier(img, output, y, Math.min(y + rows_per_thread, height), width, height, mask, maskSize, operation);
             taskExecutor.execute(t);
         }
         
@@ -169,85 +199,7 @@ public class Morphology {
         waitExecutors(taskExecutor);
         
         //Copy results to new image
-        MyOwnImage image = new MyOwnImage(img);
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                int v = output[x+y*width];
-                image.setPixel(x, y, 255, v, v, v);
-            }
-        }
-        return image;
-    }
-
-    public static MyOwnImage Erosion_binary(MyOwnImage img, boolean erodeForegroundPixel){
-        /**
-         * Dimension of the image img.
-         */
-        int width = img.getImageWidth();
-        int height = img.getImageHeight();
-        
-        /**
-         * This will hold the erosion result which will be copied to image img.
-         */
-        int output[] = new int[width * height];
-        
-        /**
-         * If erosion is to be performed on BLACK pixels then
-         * targetValue = 0
-         * else
-         * targetValue = 255;  //for WHITE pixels
-         */
-        int targetValue = (erodeForegroundPixel == true)?0:255;
-        
-        /**
-         * If the target pixel value is WHITE (255) then the reverse pixel value will
-         * be BLACK (0) and vice-versa.
-         */
-        int reverseValue = (targetValue == 255)?0:255;
-        
-        //perform erosion
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                //For BLACK pixel RGB all are set to 0 and for WHITE pixel all are set to 255.
-                if(img.getRed(x, y) == targetValue){
-                    /**
-                     * We are using a 3x3 kernel
-                     * [1, 1, 1
-                     *  1, 1, 1
-                     *  1, 1, 1]
-                     */
-                    boolean flag = false;   //this will be set if a pixel of reverse value is found in the mask
-                    for(int ty = y - 1; ty <= y + 1 && !flag; ty++){
-                        for(int tx = x - 1; tx <= x + 1 && !flag; tx++){
-                            if(ty >= 0 && ty < height && tx >= 0 && tx < width){
-                                //origin of the mask is on the image pixels
-                                if(img.getRed(tx, ty) != targetValue){
-                                    flag = true;
-                                    output[x+y*width] = reverseValue;
-                                }
-                            }
-                        }
-                    }
-                    if(!flag){
-                        //all pixels inside the mask [i.e., kernel] were of targetValue
-                        output[x+y*width] = targetValue;
-                    }
-                }else{
-                    output[x+y*width] = reverseValue;
-                }
-            }
-        }
-        MyOwnImage image = new MyOwnImage(img); // Create a copy in order to work on copied one
-        /**
-         * Save the erosion value in image img.
-         */
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                int v = output[x+y*width];
-                image.setPixel(x, y, 255, v, v, v);
-            }
-        }
-        return image;
+        return CreateImage(new MyOwnImage(img), output);
     }
     
     /**
@@ -256,7 +208,7 @@ public class Morphology {
      * @param img The image on which dilation operation is performed
      * @return copy of dilated image
      */
-        public static MyOwnImage Erosion_grayscale(MyOwnImage img){
+    public static MyOwnImage Erosion_grayscale(MyOwnImage img){
         return Erosion_grayscale(img, Runtime.getRuntime().availableProcessors()); //Assume majority of hardware have 4 cores at least
     }
     
@@ -282,6 +234,6 @@ public class Morphology {
      * @return copy of dilated image
      */
     public static MyOwnImage Erosion_grayscale(MyOwnImage img, int num_ths, int mask[], int maskSize){
-        return ExecuteMaskOnImage(img, num_ths, mask, maskSize, false);
+        return ExecuteMaskOnImage(img, num_ths, mask, maskSize, MorphOp.Erosion);
     }
 }

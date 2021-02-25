@@ -19,9 +19,9 @@ public class MaskApplier extends Thread{
     private int y_max;
     private int mask[];
     private int maskSize;
-    private boolean dilate;//True if Dilation, false if erosion
+    private MorphOp operation;//True if Dilation, false if erosion
     
-    public MaskApplier(MyOwnImage img, int output[], int y_min, int y_max, int width, int height, int mask[], int maskSize, boolean dilate){
+    public MaskApplier(MyOwnImage img, int output[], int y_min, int y_max, int width, int height, int mask[], int maskSize, MorphOp operation){
         this.img = img;
         this.output = output;
         this.width = width;
@@ -31,7 +31,7 @@ public class MaskApplier extends Thread{
         //TODO: insert future check on square matrix and odd
         this.mask = mask;
         this.maskSize = maskSize;
-        this.dilate=dilate;
+        this.operation=operation;
     }
     
     @Override
@@ -61,7 +61,7 @@ public class MaskApplier extends Thread{
 
                 //sort buff
                 java.util.Arrays.sort(buff);
-                output[x+y*width] = this.dilate ? buff[(maskSize*maskSize) - 1] : buff[(maskSize*maskSize) - i];
+                output[x+y*width] = this.operation==MorphOp.Dilation ? buff[(maskSize*maskSize) - 1] : buff[(maskSize*maskSize) - i];
             }
         }
     }
