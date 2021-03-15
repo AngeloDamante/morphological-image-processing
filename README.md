@@ -2,25 +2,31 @@
 Mathematical morphology (MM) technique implemented in sequential and parallel methods for study purposes.
 
 ## Directory Structure
-```
-|-- images
-    |-- examples : images to processing
-    |-- seqResults : results by CPU
-    |-- gpuResults : results by GPU
-    
-|-- parallel_CUDA : handled by Angelo D'Amante
-    |-- CMakeLists.txt
-    |-- sequential_CPP
-        |-- main.cpp : sequential main
-    
-    |-- CUDA
-        |-- naive.cu : parallel main v1
-        |-- sharedOpt.cu : parallel main v2
-    
-    |-- tool : wrapper classes and utils
-    |-- include : source library for CPP and CUDA
-    
-|-- parallel_JAVA : handled by Fabian Greavu
+```bash 
+├── images
+│   ├── examples            # images to processing
+│   │   ├── ...
+│   ├── seqResults          # results by CPU
+│   │   ├── ...
+│   ├── gpuResults          # results by GPU
+│   │   ├── ...
+├── parallel_CUDA           # handled by @Angelo D'Amante
+│   ├── CMakeLists.txt
+│   ├── sequential_CPP
+│   │   ├── main.cpp        # sequential main
+│   ├── CUDA
+│   │   ├── naive.cu        # parallel main v1
+│   │   ├── sharedOpt.cu    # parallel main v2
+│   ├── tool                
+│   │   ├── Image.h
+│   │   ├── utils.cuh
+│   │   ├── ...
+│   ├── include         
+│   │   ├── MathematicalMorphology.h    # src for CPU processing 
+│   │   ├── MM.cuh                      # src for GPU processing
+│   │   ├── Probe.h                     # src for probe element
+│   │   ├── ...
+├── parallel_JAVA           # handled by @Fabian Greavu
 ```
 
 # Authors
