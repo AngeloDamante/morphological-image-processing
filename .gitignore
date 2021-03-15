@@ -87,4 +87,3 @@ build
 
 # Results
 *.csv
-parallel_CUDA/CUDA/sharedOpt.cu
