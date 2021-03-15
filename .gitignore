@@ -87,7 +87,4 @@ build
 
 # Results
 *.csv
-parallel_CUDA/CUDA
-parallel_CUDA/include/MM.cu
-parallel_CUDA/include/MM.cuh
-parallel_CUDA/tool/utils.cuh
+parallel_CUDA/CUDA/sharedOpt.cu
