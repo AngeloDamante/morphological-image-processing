@@ -9,7 +9,7 @@
  *      - lion.png (2560x1440)
  *      - homer.png (3840x2160)
  *
- * @Author: AngeloDamante
+ * @Author: AngeloDamante 
  * @mail: angelo.damante16@gmail.com
  * @GitHub: https://github.com/AngeloDamante
  *
