@@ -1,18 +1,25 @@
-# Morphological image processing in parallel
+# Morphological Image Processing in Parallel Version.
 Mathematical morphology (MM) technique implemented in sequential and parallel methods for study purposes.
 
-# Workflow
-+ Sequential version in C++
-+ Parallel version in CUDA
-    + naive solution
-    + improved solution with padding and tailing
-    + Speedup measurement
-+ Parallel version in Java
-    + Speedup measurement
-+ Report
-+ Slides for presentation
-
-<!-- <img draggable="false" role="img" class="emoji" src="https://s.w.org/images/core/emoji/13.0.0/svg/2714.svg" height="10" width="10"> -->
+## Directory Structure
+```
+|-- images
+    |-- examples : images to processing
+    |-- seqResults : results by CPU
+    |-- gpuResults : results by GPU
+    
+|-- parallel_CUDA : handled by Angelo D'Amante
+    |-- CMakeLists.txt
+    |-- sequential_CPP
+        |-- main.cpp : sequential main
+    |-- CUDA
+        |-- naive.cu : parallel main v1
+        |-- sharedOpt.cu : parallel main v2
+    |-- tool : wrapper classes and utils
+    |-- include : source library for CPP and CUDA
+    
+|-- parallel_JAVA : handled by Fabian Greavu
+```
 
 # Authors
 + <a href="https://github.com/AngeloDamante"> Angelo D.Amante </a>
