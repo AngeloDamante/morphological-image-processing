@@ -84,7 +84,7 @@ parallel_JAVA/.nb-gradle/
 # For ATOM CMake
 images/tests
 build
-parallel_CUDA/tool/CImg.h
+# parallel_CUDA/tool/CImg.h
 
 # Results
 *.csv
