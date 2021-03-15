@@ -12,9 +12,11 @@ Mathematical morphology (MM) technique implemented in sequential and parallel me
     |-- CMakeLists.txt
     |-- sequential_CPP
         |-- main.cpp : sequential main
+    
     |-- CUDA
         |-- naive.cu : parallel main v1
         |-- sharedOpt.cu : parallel main v2
+    
     |-- tool : wrapper classes and utils
     |-- include : source library for CPP and CUDA
     
@@ -22,5 +24,5 @@ Mathematical morphology (MM) technique implemented in sequential and parallel me
 ```
 
 # Authors
-+ <a href="https://github.com/AngeloDamante"> Angelo D.Amante </a>
++ <a href="https://github.com/AngeloDamante"> Angelo D'Amante </a>
 + <a href="https://github.com/fabian57fabian"> Fabian Greavu </a>
