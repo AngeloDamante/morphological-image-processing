@@ -1,46 +1,61 @@
-#include "CImg.h"
 #include "Image.h"
+#include <cstdio>
+#include <iostream>
 
-using namespace cimg_library;
-
-Image::Image(const char *pathImg) {
-  CImg<float> image(pathImg);
+Image::Image(const std::string pathImg) {
+  cimg_library::CImg<float> image(pathImg.c_str());
   this->height = image.height();
   this->width = image.width();
   this->numChannels = image.spectrum();
-  this->data = image.data();
+  this->state = (numChannels > 1) ? rgb : bw;
+
+  this->data = new float[image.size()];
+  for (int i = 0; i < image.size(); i++)
+    this->data[i] = image.data()[i];
 }
 
-void Image::rgb2bn() {
-  if (this->numChannels > 1) {
-    float *bufferBn = (float *)malloc(sizeof(float) * height * width);
-    for (int i = 0; i < height * width; i++)
-      bufferBn[i] = this->data[i];
-    this->data = bufferBn;
-    this->numChannels = 1;
+void Image::saveImg(const std::string pathSave) const {
+  cimg_library::CImg<float> image(data, width, height, 1, numChannels);
+  image.save(pathSave.c_str());
+}
+
+void Image::setState(stateImg state) {
+  this->state = state;
+  this->numChannels = (state != rgb) ? 1 : 3;
+}
+
+void Image::rgb2bw() {
+  if (state == rgb) {
+    float *bufferBn = new float[height * width];
+    for (int i = 0; i < height * width; i++) {
+      bufferBn[i] = (this->data)[i];
+    }
+
+    delete[] this->data;
+    this->setData(bufferBn);
+    this->setState(bw);
   }
 }
 
-float *Image::getBinaryBufferBn() {
-  /*0.0 = black; 1.0 = white;*/
-  float *binaryData = nullptr;
-  if (this->numChannels == 1) {
-    binaryData = (float *)malloc(sizeof(float) * height * width);
-    for (int i = 0; i < height * width; i++)
-      binaryData[i] = this->data[i] / 255;
+void Image::bw2gray() {
+  if (state == bw) {
+    for (int i = 0; i < height * width; i++) {
+      this->data[i] = this->data[i] / 255;
+    }
+    this->setState(grayscale);
   }
-  return binaryData;
 }
 
-void Image::saveImg(const char *pathSave) {
-  CImg<float> image(data, width, height, 1, numChannels);
-  image.save(pathSave);
+void Image::gray2bw() {
+  if (state == grayscale) {
+    for (int i = 0; i < height * width; i++) {
+      this->data[i] = this->data[i] * 255;
+    }
+    this->setState(bw);
+  }
 }
 
-void Image::setData(float *data, bool binary) {
-  if (binary) {
-    for (int i = 0; i < height * width; i++)
-      data[i] = data[i] * 255;
-  }
-  this->data = data;
+void Image::rgb2gray() {
+  this->rgb2bw();
+  this->bw2gray();
 }

@@ -1,39 +1,60 @@
 /*
  * Image.h
+ * A simple wrapper class for Image type.
  *
  *  Created on: 23/feb/2021
  *      Author: AngeloDamante
  */
 
-class Image {
+#ifndef MM_IMAGE_H
+#define MM_IMAGE_H
 
+#define cimg_display 0
+#define cimg_use_png 1
+#include "CImg.h"
+#include <cstring>
+#include <iostream>
+
+enum stateImg { rgb, grayscale, bw };
+
+class Image {
 public:
-  inline Image(int height, int width, int numChannels, float *data)
-      : width(width), height(height), numChannels(numChannels), data(data) {}
+  inline explicit Image(int height, int width, float *data, stateImg state)
+      : width(width), height(height), data(data), state(state) {
+    this->numChannels = (state != rgb) ? 1 : 3;
+  }
 
   virtual ~Image() { delete[] data; }
 
-  Image(const char *pathImg);
+  void saveImg(const std::string pathSave) const;
 
-  void rgb2bn();
+  // @overload constructor
+  explicit Image(const std::string pathImg);
 
-  void saveImg(const char *pathSave);
+  // conversions
+  void rgb2bw();
+  void bw2gray();
+  void gray2bw();
+  void rgb2gray();
 
-  void setData(float *data, bool binary = false);
+  // setter methods
+  inline void setData(float *data) { this->data = data; }
+  void setState(stateImg state);
 
-  float *getBinaryBufferBn();
-
-  inline int getHeight() { return this->height; }
-
-  inline int getWidth() { return this->width; }
-
-  inline int getNumChannels() { return this->numChannels; }
-
-  inline float *getData() { return this->data; }
+  // getter methods
+  inline int getHeight() const { return this->height; }
+  inline int getWidth() const { return this->width; }
+  inline int getNumChannels() const { return this->numChannels; }
+  inline stateImg getState() const { return this->state; }
+  inline int getSize() const { return (height * width * numChannels); }
+  inline float *getData() const { return this->data; }
 
 private:
   int height;
   int width;
   int numChannels;
   float *data;
+  stateImg state;
 };
+
+#endif // MM_IMAGE_H
