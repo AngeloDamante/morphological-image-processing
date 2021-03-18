@@ -4,6 +4,9 @@ images/*
 
 .idea/*
 parallel_CUDA/.idea/*
+
+parallel_CUDA/tool/CImg.h
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
