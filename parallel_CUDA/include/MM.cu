@@ -194,7 +194,7 @@ void naive::__process(float* imgData, const float*__restrict__ prbData,
             outData[rowImg * imgW + colImg] = max;
 
     }
-    __syncthreads();
+    // __syncthreads(); //FIXME
 }
 
 /******* sharedOpt version *******/

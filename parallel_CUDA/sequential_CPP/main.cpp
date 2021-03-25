@@ -25,6 +25,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <experimental/filesystem>
 
 const std::string inputPath = "/images/examples/";
 const std::string outputPath = "/images/seqResults/";
