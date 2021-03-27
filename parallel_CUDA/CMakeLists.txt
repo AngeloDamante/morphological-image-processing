@@ -40,6 +40,6 @@ set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 add_executable(mm_naive CUDA/naive.cu)
 target_link_libraries(mm_naive libTool libSrc -lpng -lstdc++fs)
 
-# # sharedOpt version
-# add_executable(mm_sharedOpt CUDA/sharedOpt.cu)
-# target_link_libraries(mm_sharedOpt libTool libSrc -lpng -lstdc++fs)
+# sharedOpt version
+add_executable(mm_sharedOpt CUDA/sharedOpt.cu)
+target_link_libraries(mm_sharedOpt libTool libSrc -lpng -lstdc++fs)
