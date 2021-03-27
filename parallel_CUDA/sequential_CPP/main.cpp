@@ -50,6 +50,7 @@ int main(int argc, char const *argv[]) {
         inputImg = new Image(pathImg);
         inputImg->rgb2bw(); // extract only first channel
 
+        resultsFile << pathImg << "\n";
         for(const auto& op : operation::MM){
             std::cout << op.second << " operation in ...";
 
