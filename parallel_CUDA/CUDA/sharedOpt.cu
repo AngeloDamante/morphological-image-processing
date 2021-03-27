@@ -1,6 +1,6 @@
 /*
  * sharedOpt.cu
- * Main that build parallel version for MM operations with shared memory.
+ * Main that build parallel version for MM operations with shared memory and tiling.
  *
  * Images analyzed:
  *      - bin.png (640x480)
@@ -13,7 +13,7 @@
  * @mail: angelo.damante16@gmail.com
  * @GitHub: https://github.com/AngeloDamante
  *
- * special thanks to https://github.com/rickie95
+ * special thanks to https://github.com/rickie95 //HAHAHAHAH
  *
  */
 

@@ -8,6 +8,7 @@ services:
     image: base
     volumes:
       - ./parallel_CUDA:/parallel_CUDA
+      - ./results_CUDA:/results_CUDA
       - ./images:/images
     stdin_open: true
     tty: true

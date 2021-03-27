@@ -25,56 +25,67 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+
 #include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 
-const std::string inputPath = "/images/examples/";
-const std::string outputPath = "/images/seqResults/";
-
-const std::vector<std::string> operationsName = {"DILATATION", "EROSION",
-                                                 "OPENING", "CLOSING"};
-
-const std::vector<mmOp> morphOperations = {DILATATION, EROSION, OPENING,
-                                           CLOSING};
-
-const std::vector<std::string> images = {"bin640x480", "mandel1280x960",
-                                         "simpson1920x1200", "lion2560x1440",
-                                         "homer3840x2160"};
+const std::string inputPath = "/images";
+const std::string outputPath = "/results_CUDA"; //FIXME in the docker-compose
 
 int main(int argc, char const *argv[]) {
   Image *inputImg, *outputImg;
-  Probe *probe = new Square(2); // mask 3x3
+  Probe *probe = new Square(1); // mask 3x3
   std::chrono::high_resolution_clock::time_point start, end;
   std::chrono::duration<double> span;
   std::ofstream resultsFile;
+  std::string pathImg;
 
-  resultsFile.open("/parallelVersion/sequential_CPP/sequential_timings.csv");
-  for (const auto &img : images) {
-    inputImg = new Image(inputPath + img + ".png");
-    inputImg->rgb2bw(); // extract only first channel
+  resultsFile.open(outputPath + "/sequential_timings.csv");
+  for (const auto &img : fs::recursive_directory_iterator(inputPath)) {
+    pathImg = img.path();
 
-    std::cout << "\n" << img << " processing:" << std::endl;
+    // Verify that is image.png and not a simple dir_name
+    if(pathImg.rfind('.') != std::string::npos){
+        inputImg = new Image(pathImg);
+        inputImg->rgb2bw(); // extract only first channel
+        for(const auto& op : operation::MM){
+            std::cout << op.second << " operation in ...";
 
-    resultsFile << img << "\n";
-    for (const auto &mm : morphOperations) {
-      std::cout << operationsName[mm] << "...";
+            start = std::chrono::high_resolution_clock::now();
+            outputImg = operation::MathematicalMorphology::mm(inputImg, probe, op.first);
+            end = std::chrono::high_resolution_clock::now();
+            span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+            //outputImg->saveImg(...);
 
-      start = std::chrono::high_resolution_clock::now();
-      outputImg = operation::MathematicalMorphology::mm(inputImg, probe, mm);
-      end = std::chrono::high_resolution_clock::now();
-      span = end - start;
-      span = std::chrono::duration_cast<std::chrono::duration<double>>(span);
-
-      outputImg->saveImg(outputPath + img + "__" + operationsName[mm] + ".png");
-
-      std::cout << span.count() << std::endl;
-      resultsFile << operationsName[mm] << ";" << span.count() << "\n";
+            std::cout << span.count() <<std::endl;
+            resultsFile << op.second << ";" << span.count() << "\n";
+        }
+    }else{
+        std::cout << "PROCESSING------->" << pathImg << std::endl;
+        resultsFile << pathImg << "\n";
     }
 
-    delete inputImg;
   }
+  delete inputImg;
   delete probe;
 
   resultsFile.close();
+
+  /*-------------------------------------------------------------------------*/
+  // int c = 0;
+  // std::string myPath;
+  //
+  // for (const auto &img : fs::recursive_directory_iterator("/images")) {
+  //   myPath = img.path();
+  //   if (myPath.rfind('.') != std::string::npos) {
+  //     std::cout << ++c << myPath << std::endl;
+  //     for (const auto &op : operation::MM)
+  //       std::cout << op.first << "  " << op.second << std::endl;
+  //   } else {
+  //     std::cout << "-------------" << myPath << std::endl;
+  //   }
+  // }
+  /*-------------------------------------------------------------------------*/
 
   printf("\n *** Completed! *** \n");
   return 0;

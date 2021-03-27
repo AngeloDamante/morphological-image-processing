@@ -15,10 +15,23 @@
 
 #include "Image.h"
 #include "Probe.h"
+#include <map>
+
+#include <cstring>
 
 enum mmOp { DILATATION, EROSION, OPENING, CLOSING };
 
 namespace operation {
+
+    const std::map<mmOp, std::string> MM = \
+    {
+        {DILATATION, "Dilatation"},
+        {EROSION, "Erosion"},
+        {CLOSING, "Closing"},
+        {OPENING, "Opening"}
+
+    };
+
     class MathematicalMorphology {
     public:
       MathematicalMorphology() = delete;
@@ -51,6 +64,7 @@ namespace operation {
         float min(float *src, int length);
         void initilize(float *src, int length);
     } // namespace utils
+    
 } // namespace operation
 
 #endif // MM_MATHEMATICAL_MORPHOLOGY_H
