@@ -30,7 +30,7 @@
 namespace fs = std::experimental::filesystem;
 
 const std::string inputPath = "/images";
-const std::string outputPath = "/results_CUDA"; //FIXME in the docker-compose
+const std::string outputPath = "/results_CUDA";
 
 int main(int argc, char const *argv[]) {
   Image *inputImg, *outputImg;
@@ -46,8 +46,10 @@ int main(int argc, char const *argv[]) {
 
     // Verify that is image.png and not a simple dir_name
     if(pathImg.rfind('.') != std::string::npos){
+
         inputImg = new Image(pathImg);
         inputImg->rgb2bw(); // extract only first channel
+
         for(const auto& op : operation::MM){
             std::cout << op.second << " operation in ...";
 
@@ -60,32 +62,18 @@ int main(int argc, char const *argv[]) {
             std::cout << span.count() <<std::endl;
             resultsFile << op.second << ";" << span.count() << "\n";
         }
+
     }else{
-        std::cout << "PROCESSING------->" << pathImg << std::endl;
+
+        std::cout << "\n" << "PROCESSING------->" << pathImg << std::endl;
         resultsFile << pathImg << "\n";
+
     }
 
   }
-  delete inputImg;
-  delete probe;
 
+  delete inputImg, probe;
   resultsFile.close();
-
-  /*-------------------------------------------------------------------------*/
-  // int c = 0;
-  // std::string myPath;
-  //
-  // for (const auto &img : fs::recursive_directory_iterator("/images")) {
-  //   myPath = img.path();
-  //   if (myPath.rfind('.') != std::string::npos) {
-  //     std::cout << ++c << myPath << std::endl;
-  //     for (const auto &op : operation::MM)
-  //       std::cout << op.first << "  " << op.second << std::endl;
-  //   } else {
-  //     std::cout << "-------------" << myPath << std::endl;
-  //   }
-  // }
-  /*-------------------------------------------------------------------------*/
 
   printf("\n *** Completed! *** \n");
   return 0;
