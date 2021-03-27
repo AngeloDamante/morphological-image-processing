@@ -31,15 +31,15 @@ target_link_libraries(mm_sequential libTool libSrc
 )
 
 
-# ## CUDA
-# find_package(CUDA QUIET REQUIRED)
-# set(CUDA_SEPARABLE_COMPILATION ON)
-# set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-#
-# # naive version
-# add_executable(mm_naive CUDA/naive.cu)
-# target_link_libraries(mm_naive libTool libSrc -lpng)
-#
+## CUDA
+find_package(CUDA QUIET REQUIRED)
+set(CUDA_SEPARABLE_COMPILATION ON)
+set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+
+# naive version
+add_executable(mm_naive CUDA/naive.cu)
+target_link_libraries(mm_naive libTool libSrc -lpng -lstdc++fs)
+
 # # sharedOpt version
 # add_executable(mm_sharedOpt CUDA/sharedOpt.cu)
-# target_link_libraries(mm_sharedOpt libTool libSrc -lpng)
+# target_link_libraries(mm_sharedOpt libTool libSrc -lpng -lstdc++fs)

@@ -23,13 +23,23 @@
 #include "Image.h"
 #include "Probe.h"
 #include <iostream>
+#include <map>
 
 enum MMop { DILATATION, EROSION, OPENING, CLOSING };
 enum Version { NAIVE, SHAREDOPT };
+const std::map<MMop, std::string> MMoperations = \
+{
+    {DILATATION, "Dilatation"},
+    {EROSION, "Erosion"},
+    {CLOSING, "Closing"},
+    {OPENING, "Opening"}
+
+};
+
 
 const int MASK_RADIUS = 1;
 const int MASK_WIDTH = MASK_RADIUS * 2 + 1;  // PROBE 3x3
-const int TILE_WIDTH = 32;  // WARP-SIZE
+const int TILE_WIDTH = 32;
 __constant__ float probeDataD[MASK_WIDTH*MASK_WIDTH];  // To alloc probe
 
 /// Interface

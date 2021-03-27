@@ -64,6 +64,8 @@ int main(int argc, char const *argv[]) {
             resultsFile << op.second << ";" << span.count() << "\n";
         }
 
+        delete inputImg;
+
     }else{
 
         std::cout << "\n" << "PROCESSING------->" << pathImg << std::endl;
@@ -73,7 +75,7 @@ int main(int argc, char const *argv[]) {
 
   }
 
-  delete inputImg, probe;
+  delete probe;
   resultsFile.close();
 
   printf("\n *** Completed! *** \n");

@@ -16,7 +16,6 @@
 #include "Image.h"
 #include "Probe.h"
 #include <map>
-
 #include <cstring>
 
 enum mmOp { DILATATION, EROSION, OPENING, CLOSING };
@@ -64,7 +63,7 @@ namespace operation {
         float min(float *src, int length);
         void initilize(float *src, int length);
     } // namespace utils
-    
+
 } // namespace operation
 
 #endif // MM_MATHEMATICAL_MORPHOLOGY_H

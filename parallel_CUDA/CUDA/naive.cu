@@ -9,7 +9,7 @@
  *      - lion.png (2560x1440)
  *      - homer.png (3840x2160)
  *
- * @Author: AngeloDamante 
+ * @Author: AngeloDamante
  * @mail: angelo.damante16@gmail.com
  * @GitHub: https://github.com/AngeloDamante
  *
@@ -24,19 +24,11 @@
 #include <fstream>
 #include <vector>
 
-const std::string inputPath = "/images/examples/";
-const std::string outputPath = "/images/gpuResults/";
-const std::string testPath = "/images/tests/";
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 
-const std::vector<std::string> operationsName = {"DILATATION", "EROSION",
-                                                 "OPENING", "CLOSING"};
-
-const std::vector<MMop> morphOperations = {DILATATION, EROSION, OPENING,
-                                           CLOSING};
-
-const std::vector<std::string> images = {"bin640x480", "mandel1280x960",
-                                         "simpson1920x1200", "lion2560x1440",
-                                         "homer3840x2160"};
+const std::string inputPath = "/images";
+const std::string outputPath = "/results_CUDA";
 
 int main(int argc, char const *argv[]) {
 
@@ -45,38 +37,41 @@ int main(int argc, char const *argv[]) {
     std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::duration<double> span;
     std::ofstream resultsFile;
+    std::string pathImg;
 
-    resultsFile.open("/parallelVersion/CUDA/naive_timing.csv");
+    resultsFile.open(outputPath + "/naive_timing.csv");
+    for(const auto& img : fs::recursive_directory_iterator(inputPath)){
+        pathImg = img.path();
 
-    for ( const auto &img : images) {
-        inputImg = new Image(inputPath + img + ".png");
-        inputImg->rgb2bw();
+        // Verify that is image.png and not a simple dir_name
+        if(pathImg.rfind('.') != std::string::npos){
 
-        std::cout << "\n" << img << " processing:" << std::endl;
+            inputImg = new Image(pathImg);
+            inputImg -> rgb2bw();
 
-        resultsFile << img << "\n";
+            resultsFile << pathImg << "\n";
+            for(const auto& op : MMoperations){
+                std::cout << op.second << " operation in ...";
 
-        // Every operation in naive version
-        for (const auto &op : morphOperations) {
-            std::cout << operationsName[op] << "...";
+                start = std::chrono::high_resolution_clock::now();
+                outputImg = mm(inputImg, probe, op.first, NAIVE);
+                end = std::chrono::high_resolution_clock::now();
+                span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+                //outputImg->saveImg(...);
 
-            start = std::chrono::high_resolution_clock::now();
-            outputImg = mm(inputImg, probe, op, NAIVE);
-            end = std::chrono::high_resolution_clock::now();
-            span = end - start;
-            span = std::chrono::duration_cast<std::chrono::duration<double>>(span);
+                std::cout << span.count() <<std::endl;
+                resultsFile << op.second << ";" << span.count() << "\n";
+            }
 
-            // outputImg->saveImg(testPath + img + "__" + operationsName[op] + ".png");
-            outputImg->saveImg(outputPath + img + "__" + operationsName[op] + ".png");
-
-            std::cout << span.count() << std::endl;
-            resultsFile << operationsName[op] << ";" << span.count() << "\n";
+            delete inputImg;
+        }else{
+            std::cout << "\n" << "PROCESSING------->" << pathImg << std::endl;
+            resultsFile << pathImg << "\n";
         }
 
-        delete inputImg;
     }
-    delete probe;
 
+    delete probe;
     resultsFile.close();
 
     printf("\n *** Completed! *** \n");
