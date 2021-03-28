@@ -16,7 +16,7 @@
  * @Author: AngeloDamante
  * @mail: angelo.damante16@gmail.com
  * @GitHub: https://github.com/AngeloDamante
- */
+*/
 
 #ifndef MM_MM_CUH
 #define MM_MM_CUH
@@ -44,16 +44,30 @@ const std::map<MMop, std::string> MMoperations = \
 };
 
 
-/// Interface
+/**
+ * Interface to choice MM operation and parallel version.
+ *
+ * @param Image* image: input Image to processing.
+ * @param Probe* probe: mask that represents structuring element.
+ * @param MMop mmOp: enum for MM operations.
+ * @param Version vrs: enum for parallel version.
+ *
+ * @return Image*: image processed.
+*/
 __host__ Image* mm(Image* image, Probe* probe, MMop mmOp, Version vrs);
 
-/// Operations
+/// To implement erosiom operation with version chosen.
 __host__ Image* erosion(Image* image, Probe* probe, Version vrs);
+
+/// To implement dilatation operation with version chosen.
 __host__ Image* dilatation(Image* image, Probe* probe, Version vrs);
+
+/// To implement opening operation with version chosen.
 __host__ Image* opening(Image* image, Probe* probe, Version vrs);
+
+/// To implement closing operation with version chosen.
 __host__ Image* closing(Image* image, Probe* probe, Version vrs);
 
-__global__ void __foo(float* imgData, float* outData, int imgH, int imgW);
 
 namespace naive{
 
@@ -81,9 +95,26 @@ namespace naive{
 } // naive
 
 namespace sharedOpt{
+
+    /**
+     * Process to compute optimized parallel solution.
+     *
+     * This solution consists of two batch loading and computing phase.
+     * The tile is loading in shared memory and use a simple padding policy.
+     * The mask is loading in constant memory.
+     *
+     * @param float* imgData: input image buffer stored in global memory.
+     * @param float* outData: output image buffer stored in global memory.
+     * @param int imgH, imgW, prbH, prbW are properties of image and probe.
+     * @param MMop mmOp: enum type of MM operation.
+     *
+     * @return void in accord with CUDA rules for __global__ function.
+    */
+
     __global__
     void __process(float* imgData, const float* __restrict__ prbData,
         float* outData, int imgH, int imgW, int prbH, int prbW, MMop mmOp);
+
 } // sharedOpt
 
 #endif // MM_MM_CUH

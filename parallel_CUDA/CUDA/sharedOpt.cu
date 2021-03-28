@@ -53,7 +53,7 @@ int main(int argc, char const *argv[]) {
                 outputImg = mm(inputImg, probe, op.first, SHAREDOPT);
                 end = std::chrono::high_resolution_clock::now();
                 span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
-                //outputImg->saveImg(...);
+                // outputImg->saveImg("...");
 
                 std::cout << span.count() <<std::endl;
                 resultsFile << op.second << ";" << span.count() << "\n";

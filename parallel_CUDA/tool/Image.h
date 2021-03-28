@@ -5,7 +5,7 @@
  * @Author: AngeloDamante
  * @mail: angelo.damante16@gmail.com
  * @GitHub: https://github.com/AngeloDamante
- */
+*/
 
 #ifndef MM_IMAGE_H
 #define MM_IMAGE_H
