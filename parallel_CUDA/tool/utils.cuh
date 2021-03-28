@@ -2,9 +2,11 @@
  * utils.cuh
  * Definitions of macro for CUDA compiler.
  *
- *  Created on: 01/mar/2021
- *      Author: AngeloDamante
- *      Special thanks: bertini (my teacher)
+ * @Author: AngeloDamante
+ * @mail: angelo.damante16@gmail.com
+ * @GitHub: https://github.com/AngeloDamante
+ *
+ * special thanks to https://github.com/mbertini (my teacher)
  */
 
 #include <iostream>

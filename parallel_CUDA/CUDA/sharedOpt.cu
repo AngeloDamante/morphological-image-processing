@@ -1,21 +1,15 @@
 /*
  * sharedOpt.cu
- * Main that build parallel version for MM operations with shared memory and tiling.
+ * Main that build parallel version for MM operations in optimized solution.
  *
- * Images analyzed:
- *      - bin.png (640x480)
- *      - mandel.png (1280x960)
- *      - simpson.png (1920x1200)
- *      - lion.png (2560x1440)
- *      - homer.png (3840x2160)
+ * This solution use shared memory and tailing techniques.
+ * The probe element is stored on constant memory.
+ *
  *
  * @Author: AngeloDamante
  * @mail: angelo.damante16@gmail.com
  * @GitHub: https://github.com/AngeloDamante
- *
- * special thanks to https://github.com/rickie95 //HAHAHAHAH
- *
- */
+*/
 
 #include "Image.h"
 #include "Probe.h"

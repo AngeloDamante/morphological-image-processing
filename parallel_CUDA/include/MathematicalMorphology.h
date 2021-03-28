@@ -6,8 +6,9 @@
  *      - Opening = D(E(Image, probe), probe)
  *      - Closing = E(D(Image, probe), probe)
  *
- *  Created on: 23/feb/2021
- *      Author: AngeloDamante
+ * @Author: AngeloDamante
+ * @mail: angelo.damante16@gmail.com
+ * @GitHub: https://github.com/AngeloDamante
  */
 
 #ifndef MM_MATHEMATICAL_MORPHOLOGY_H

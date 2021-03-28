@@ -2,8 +2,9 @@
  * Probe.h
  * Definition probe class for structuring element.
  *
- * Created on: 23/feb/2021
- *      Author: AngeloDamante
+ * @Author: AngeloDamante
+ * @mail: angelo.damante16@gmail.com
+ * @GitHub: https://github.com/AngeloDamante
  */
 
 #ifndef MM_PROBE_H

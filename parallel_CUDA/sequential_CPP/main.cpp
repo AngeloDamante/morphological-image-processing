@@ -2,18 +2,11 @@
  * main.cpp
  * Main that build sequential version for MM operations.
  *
- * Images analyzed:
- *      - bin.png (640x480)
- *      - mandel.png (1280x960)
- *      - simpson.png (1920x1200)
- *      - lion.png (2560x1440)
- *      - homer.png (3840x2160)
  *
  * @Author: AngeloDamante
  * @mail: angelo.damante16@gmail.com
  * @GitHub: https://github.com/AngeloDamante
- *
- */
+*/
 
 #include "Image.h"
 #include "MathematicalMorphology.h"

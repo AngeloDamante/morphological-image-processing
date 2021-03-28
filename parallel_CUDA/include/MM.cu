@@ -60,8 +60,8 @@ Image* erosion(Image* image, Probe* probe, Version vrs) {
     }
 
     if(vrs == SHAREDOPT){
-        int sharedMem = (TILE_WIDTH + prbW - 1) * (TILE_WIDTH + prbH - 1) * sizeof(float);
-        sharedOpt::__process<<<dimGrid, dimBlock, sharedMem>>>(
+        // int sharedMem = (TILE_WIDTH + prbW - 1) * (TILE_WIDTH + prbH - 1) * sizeof(float);
+        sharedOpt::__process<<<dimGrid, dimBlock>>>(
             imgDataD, probeDataD, outDataD, imgH, imgW, prbH, prbW, DILATATION);
         cudaDeviceSynchronize();
     }
@@ -116,8 +116,8 @@ Image* dilatation(Image* image, Probe* probe, Version vrs) {
     }
 
     if(vrs == SHAREDOPT){
-        int sharedMem = (TILE_WIDTH + prbW - 1) * (TILE_WIDTH + prbH - 1) * sizeof(float);
-        sharedOpt::__process<<<dimGrid, dimBlock, sharedMem>>>(
+        // int sharedMem = (TILE_WIDTH + prbW - 1) * (TILE_WIDTH + prbH - 1) * sizeof(float);
+        sharedOpt::__process<<<dimGrid, dimBlock>>>(
             imgDataD, probeDataD, outDataD, imgH, imgW, prbH, prbW, DILATATION);
         cudaDeviceSynchronize();
     }
@@ -201,160 +201,64 @@ __global__
 void sharedOpt::__process(float* imgData, const float* __restrict__ prbData,
     float* outData, int imgH, int imgW, int prbH, int prbW, MMop mmOp){
 
-    int tx = threadIdx.x;
-    int ty = threadIdx.y;
-    int bx = blockIdx.x;
-    int by = blockIdx.y;
-    int colImg = bx * blockDim.x + tx;
-    int rowImg = by * blockDim.y + ty;
+    int rowImg, colImg;
+    __shared__ float tileDS[W][W];
 
-    // to handle shared memory
-    extern __shared__ float tileDS[];
-    int wideTile = TILE_WIDTH + prbW - 1;
-    int dest = threadIdx.y * wideTile + threadIdx.x;
-    int destY = dest / wideTile;
-	int destX = dest % wideTile;
+    /// first batch loading
+    int dest = threadIdx.y * TILE_WIDTH + threadIdx.x;
+    int destY = dest / W;
+	int destX = dest % W;
+    int srcY = blockIdx.y * TILE_WIDTH + destY - MASK_RADIUS;
+    int srcX = blockIdx.x * TILE_WIDTH + destX - MASK_RADIUS;
+    int src = srcY * imgW + srcX;
 
-    /// load Tile
-    if(rowImg >= 0 && rowImg < imgH && colImg >= 0 && colImg < imgW)
-        tileDS[(destY + prbH / 2) * wideTile + destX + prbW / 2] = imgData[rowImg * imgW + colImg];
-    else
-        tileDS[(destY + prbH / 2) * wideTile + destX + prbW / 2] = -1;
-    __syncthreads();
-
-    /// padding
-    // top row
-    if(ty == 0){
-        for(int row = 0; row < prbH/2; row++){
-            if(rowImg == 0)
-                tileDS[row * wideTile + destX + prbW/2] = -1;
-            else
-                tileDS[row * wideTile + destX + prbW/2] = imgData[(rowImg - prbH/2 + row) * imgW + colImg];
-        }
+    if(srcY >= 0 && srcY < imgH && srcX >= 0 && srcX < imgW){
+        tileDS[destY][destX] = imgData[src];
+    }else{
+        tileDS[destY][destX] = 0;
     }
 
-    // left column
-    if(tx == 0){
-        for(int col = 0; col < prbW/2; col++){
-            if(colImg == 0)
-                tileDS[(destY + prbH/2) * wideTile + col] = -1;
-            else
-                tileDS[(destY + prbH/2) * wideTile + col] = imgData[rowImg * imgW + (colImg - prbW/2 + col)];
-        }
-    }
+    /// second batch loading
+    dest = threadIdx.y * TILE_WIDTH + threadIdx.x + TILE_WIDTH * TILE_WIDTH;
+    destY = dest / W;
+    destX = dest % W,
+    srcY = blockIdx.y * TILE_WIDTH + destY - MASK_RADIUS;
+    srcX = blockIdx.x * TILE_WIDTH + destX - MASK_RADIUS;
+    src = srcY * imgW + srcX;
 
-    // bottom row
-    if(ty == TILE_WIDTH - 1){
-        for(int row = wideTile - prbH/2; row < wideTile; row++){
-            int gy = rowImg + (row - wideTile + prbH/2);
-            if(gy >= imgH)
-                tileDS[row * wideTile + destX + prbW/2] = -1;
-            else
-                tileDS[row * wideTile + destX + prbW/2] = imgData[gy * imgW + colImg];
-        }
-    }
-
-    // right column
-    if(tx == TILE_WIDTH - 1){
-        for(int col = prbW/2; col < wideTile; col++){
-            int gx = colImg - wideTile + prbH/2 + col;
-            if(gx >= imgW)
-                tileDS[(destY + prbH/2) * wideTile + col] = -1;
-            else{
-                if(rowImg * imgW + gx > 0)
-                    tileDS[(destY + prbH/2) * wideTile + col] = imgData[rowImg * imgW + gx];  //FIXME
-            }
-        }
-    }
-
-    // NW corner
-    if(tx == 0 && ty == 0){
-        for(int row = 0; row < prbH/2; row++){
-            for(int col = 0; col < prbW/2; col++){
-
-                int gx = colImg - prbW/2 + col;
-                int gy = rowImg - prbH/2 + row;
-
-                if(gx < 0 || gy < 0)
-                    tileDS[row * wideTile + col] = -1;
-                else
-                    tileDS[row * wideTile + col] = imgData[gy * imgW + gx];
-            }
-        }
-    }
-
-    // NE corner
-    if(tx == TILE_WIDTH - 1 && ty == 0){
-        for(int row = 0; row < prbH/2; row++){
-            for(int col = TILE_WIDTH + prbH/2; col < wideTile; col ++){
-                int gx = colImg + 1 + col;
-                int gy = rowImg - prbH/2 + row;
-
-                if(gx >= imgW || gy < 0)
-                    tileDS[row * wideTile + col] = -1;
-                else
-                    tileDS[row * wideTile + col] = imgData[gy * imgW + gx];
-            }
-        }
-    }
-
-    // SW corner
-    if(tx == 0 && ty == TILE_WIDTH - 1){
-        for(int row = TILE_WIDTH + prbH/2; row < wideTile; row++){
-            for(int col = 0; col < prbW/2; col++){
-                int gx = colImg - prbW/2 + col;
-                int gy = rowImg + 1 + row;
-
-                if(gx < 0 || gy >= imgH)
-                    tileDS[row * wideTile + col] = -1;
-                else
-                    tileDS[row * wideTile + col] = imgData[gy * imgW + gx];
-            }
-        }
-    }
-
-    // SE corner
-    if(tx == TILE_WIDTH - 1 && ty == TILE_WIDTH -1){
-        for(int row = TILE_WIDTH + prbH/2; row < wideTile; row++){
-            for(int col = TILE_WIDTH + prbW/2; col < wideTile; col++){
-                int gx = colImg + 1 + col;
-                int gy = rowImg + 1 + row;
-
-                if(gx >= imgW || gy >= imgH)
-                    tileDS[row * wideTile + col] = -1;
-                else
-                    tileDS[row * wideTile + col] = imgData[gy * imgW + gx];
-            }
+    if(destY < W){
+        if(srcY >= 0 && srcY < imgH && srcX >= 0 && srcX < imgW){
+            tileDS[destY][destX] = imgData[src];
+        }else{
+            tileDS[destY][destX] = 0;
         }
     }
 
     __syncthreads();
 
     /// compute
-    if(rowImg >= 0 && rowImg < imgH && colImg >= 0 && colImg < imgW){
-        float max = tileDS[(destY + prbH/2) * wideTile + destX + prbW/2];
-        float min = max;
+    float max = tileDS[threadIdx.y][threadIdx.x];
+    float min = max;
 
-        for(int rowPrb = - prbH/2; rowPrb < prbH/2; rowPrb++) {
-            for(int colPrb = - prbW/2; colPrb < prbW/2; colPrb++) {
+    for(int y = 0; y < MASK_WIDTH; y++){
+        for(int x = 0; x < MASK_WIDTH; x++){
+            if(max < tileDS[threadIdx.y + y][threadIdx.x + x])
+                max = tileDS[threadIdx.y + y][threadIdx.x + x];
 
-                // apply mask
-                if(tileDS[(destY + prbH/2 + rowPrb) * wideTile + destX + prbW/2 + colPrb] > -1){
-
-                    if(max < tileDS[(destY + prbH/2 + rowPrb) * wideTile + destX + prbW/2 + colPrb])
-                        max = tileDS[(destY + prbH/2 + rowPrb) * wideTile + destX + prbW/2 + colPrb];
-
-                    if(min > tileDS[(destY + prbH/2 + rowPrb) * wideTile + destX + prbW/2 + colPrb])
-                        min = tileDS[(destY + prbH/2 + rowPrb) * wideTile + destX + prbW/2 + colPrb];
-                }
-            }
+            if(min > tileDS[threadIdx.y + y][threadIdx.x + x])
+                min = tileDS[threadIdx.y + y][threadIdx.x + x];
         }
+    }
 
-        if(mmOp == EROSION)
+    rowImg = blockIdx.y * TILE_WIDTH + threadIdx.y;
+    colImg = blockIdx.x * TILE_WIDTH + threadIdx.x;
+    if(rowImg < imgH && colImg < imgW){
+        if (mmOp == EROSION)
             outData[rowImg * imgW + colImg] = min;
 
         if(mmOp == DILATATION)
             outData[rowImg * imgW + colImg] = max;
     }
+
     __syncthreads();
 }

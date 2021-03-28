@@ -2,8 +2,9 @@
  * Image.h
  * A simple wrapper class for Image type.
  *
- *  Created on: 23/feb/2021
- *      Author: AngeloDamante
+ * @Author: AngeloDamante
+ * @mail: angelo.damante16@gmail.com
+ * @GitHub: https://github.com/AngeloDamante
  */
 
 #ifndef MM_IMAGE_H
