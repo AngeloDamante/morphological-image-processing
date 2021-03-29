@@ -34,6 +34,7 @@ int main(int argc, char const *argv[]) {
   std::string pathImg;
 
   resultsFile.open(outputPath + "/sequential_timings.csv");
+  resultsFile << "image" << ";" << "operation" << ";" << "time" << "\n";
   for (const auto &img : fs::recursive_directory_iterator(inputPath)) {
     pathImg = img.path();
 
@@ -43,7 +44,6 @@ int main(int argc, char const *argv[]) {
         inputImg = new Image(pathImg);
         inputImg->rgb2bw(); // extract only first channel
 
-        resultsFile << pathImg << "\n";
         for(const auto& op : operation::MM){
             std::cout << op.second << " operation in ...";
 
@@ -54,16 +54,13 @@ int main(int argc, char const *argv[]) {
             //outputImg->saveImg(...);
 
             std::cout << span.count() <<std::endl;
-            resultsFile << op.second << ";" << span.count() << "\n";
+            resultsFile << pathImg << ";" << op.second << ";" << span.count() << "\n";
         }
 
         delete inputImg;
 
     }else{
-
         std::cout << "\n" << "PROCESSING------->" << pathImg << std::endl;
-        resultsFile << pathImg << "\n";
-
     }
 
   }

@@ -49,4 +49,4 @@ services:
     ipc: 'host'
     depends_on:
       - autoKernel
-    command: python3 /results_CUDA/test.py
+    # command: python3 /results_CUDA/test.py
