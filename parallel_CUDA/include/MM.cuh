@@ -26,26 +26,29 @@
 #include <iostream>
 #include <map>
 
-const int MASK_RADIUS = 1;
-const int MASK_WIDTH = MASK_RADIUS * 2 + 1;  // PROBE 3x3
-const int TILE_WIDTH = 32;
-const int W = TILE_WIDTH + MASK_WIDTH - 1;
-__constant__ float probeDataD[MASK_WIDTH*MASK_WIDTH];  // To alloc probe
+/// @var const int TILE_WIDTH: defined like reading env-variable in CMake.
+#define MASK_RADIUS 1
+#define MASK_WIDTH (MASK_RADIUS * 2 + 1) // PROBE 3x3
+#define W (TILE_WIDTH + MASK_WIDTH - 1)
+__constant__ float probeDataD[MASK_WIDTH * MASK_WIDTH];  // To alloc probe
 
+/// @type MMop: collect of MM operations.
+/// @type Version: collect of versions of parallel solution.
 enum MMop { DILATATION, EROSION, OPENING, CLOSING };
 enum Version { NAIVE, SHAREDOPT };
+
+/// @var map MMoperations defined to iterate the processes and write on csv.
 const std::map<MMop, std::string> MMoperations = \
 {
     {DILATATION, "Dilatation"},
     {EROSION, "Erosion"},
     {CLOSING, "Closing"},
     {OPENING, "Opening"}
-
 };
 
 
 /**
- * Interface to choice MM operation and parallel version.
+ * Interface to choice MM operation and parallel Version.
  *
  * @param Image* image: input Image to processing.
  * @param Probe* probe: mask that represents structuring element.
@@ -56,16 +59,16 @@ const std::map<MMop, std::string> MMoperations = \
 */
 __host__ Image* mm(Image* image, Probe* probe, MMop mmOp, Version vrs);
 
-/// To implement erosiom operation with version chosen.
+/// To implement erosion operation with chosen version.
 __host__ Image* erosion(Image* image, Probe* probe, Version vrs);
 
-/// To implement dilatation operation with version chosen.
+/// To implement dilatation operation with chosen version.
 __host__ Image* dilatation(Image* image, Probe* probe, Version vrs);
 
-/// To implement opening operation with version chosen.
+/// To implement opening operation with chosen version.
 __host__ Image* opening(Image* image, Probe* probe, Version vrs);
 
-/// To implement closing operation with version chosen.
+/// To implement closing operation with chosen version.
 __host__ Image* closing(Image* image, Probe* probe, Version vrs);
 
 

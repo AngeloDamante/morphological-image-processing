@@ -25,6 +25,8 @@ namespace fs = std::experimental::filesystem;
 const std::string inputPath = "/images";
 const std::string outputPath = "/results_CUDA";
 
+// #define NUM_NUM_THREAD_PER_AXIS
+
 int main(int argc, char const *argv[]) {
   Image *inputImg, *outputImg;
   Probe *probe = new Square(1); // mask 3x3
@@ -62,7 +64,6 @@ int main(int argc, char const *argv[]) {
     }else{
         std::cout << "\n" << "PROCESSING------->" << pathImg << std::endl;
     }
-
   }
 
   delete probe;

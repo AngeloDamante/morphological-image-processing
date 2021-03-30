@@ -1,7 +1,7 @@
 #include "utils.cuh"
 #include "MM.cuh"
 
-/******* Interface *******/
+
 __host__
 Image* mm(Image* image, Probe* probe, MMop mmOp, Version vrs){
     switch (mmOp){
@@ -23,9 +23,15 @@ Image* mm(Image* image, Probe* probe, MMop mmOp, Version vrs){
     }
 }
 
-/******* Operations for MM *******/
+/**
+ * @brief Operations implemented using __process common function.
+ *
+ * Basic: Dilatation D, Erosion E
+ * Composed: Opening = D(E(image)), Closing = E(D(Image))
+*/
 __host__
 Image* erosion(Image* image, Probe* probe, Version vrs) {
+
     float *imgData, *imgDataD, *outData, *outDataD, *probeData;
     int imgH = image->getHeight();
     int imgW = image->getWidth();
@@ -60,7 +66,6 @@ Image* erosion(Image* image, Probe* probe, Version vrs) {
     }
 
     if(vrs == SHAREDOPT){
-        // int sharedMem = (TILE_WIDTH + prbW - 1) * (TILE_WIDTH + prbH - 1) * sizeof(float);
         sharedOpt::__process<<<dimGrid, dimBlock>>>(
             imgDataD, probeDataD, outDataD, imgH, imgW, prbH, prbW, DILATATION);
         cudaDeviceSynchronize();
@@ -82,6 +87,7 @@ Image* erosion(Image* image, Probe* probe, Version vrs) {
 
 __host__
 Image* dilatation(Image* image, Probe* probe, Version vrs) {
+
     float *imgData, *imgDataD, *outData = nullptr, *outDataD, *probeData;
     int imgH = image->getHeight();
     int imgW = image->getWidth();
@@ -116,7 +122,6 @@ Image* dilatation(Image* image, Probe* probe, Version vrs) {
     }
 
     if(vrs == SHAREDOPT){
-        // int sharedMem = (TILE_WIDTH + prbW - 1) * (TILE_WIDTH + prbH - 1) * sizeof(float);
         sharedOpt::__process<<<dimGrid, dimBlock>>>(
             imgDataD, probeDataD, outDataD, imgH, imgW, prbH, prbW, DILATATION);
         cudaDeviceSynchronize();
@@ -153,7 +158,16 @@ Image* closing(Image* image, Probe* probe, Version vrs) {
 }
 
 
-/******* naive version *******/
+/**
+ * @brief Naive version to process the images.
+ *
+ * A simple implementation that compute basic operations in parallel version.
+ *  - DILATATION: select max value of neighborhood
+ *  - EROSION: select min value of neighborhood
+ *
+ * In according CUDA documentation, this function is called by host and
+ *      executed by the device.
+*/
 __global__
 void naive::__process(float* imgData, const float*__restrict__ prbData,
     float* outData, int imgH, int imgW, int prbH, int prbW, MMop mmOp){
@@ -196,7 +210,16 @@ void naive::__process(float* imgData, const float*__restrict__ prbData,
     }
 }
 
-/******* sharedOpt version *******/
+/**
+ * @brief Optimized parallel version to process the images.
+ *
+ * The optimizations consists of
+ *  - Shared Memory usage
+ *  - Simple Padding policy (value as -1)
+ *
+ * In according CUDA documentation, this function is called by host and
+ *      executed by the device.
+*/
 __global__
 void sharedOpt::__process(float* imgData, const float* __restrict__ prbData,
     float* outData, int imgH, int imgW, int prbH, int prbW, MMop mmOp){
@@ -215,7 +238,7 @@ void sharedOpt::__process(float* imgData, const float* __restrict__ prbData,
     if(srcY >= 0 && srcY < imgH && srcX >= 0 && srcX < imgW){
         tileDS[destY][destX] = imgData[src];
     }else{
-        tileDS[destY][destX] = 0;
+        tileDS[destY][destX] = -1;
     }
 
     /// second batch loading
@@ -230,7 +253,7 @@ void sharedOpt::__process(float* imgData, const float* __restrict__ prbData,
         if(srcY >= 0 && srcY < imgH && srcX >= 0 && srcX < imgW){
             tileDS[destY][destX] = imgData[src];
         }else{
-            tileDS[destY][destX] = 0;
+            tileDS[destY][destX] = -1;
         }
     }
 
@@ -242,11 +265,13 @@ void sharedOpt::__process(float* imgData, const float* __restrict__ prbData,
 
     for(int y = 0; y < MASK_WIDTH; y++){
         for(int x = 0; x < MASK_WIDTH; x++){
-            if(max < tileDS[threadIdx.y + y][threadIdx.x + x])
-                max = tileDS[threadIdx.y + y][threadIdx.x + x];
+            if(tileDS[threadIdx.y + y][threadIdx.x + x] > -1){
+                if(max < tileDS[threadIdx.y + y][threadIdx.x + x])
+                    max = tileDS[threadIdx.y + y][threadIdx.x + x];
 
-            if(min > tileDS[threadIdx.y + y][threadIdx.x + x])
-                min = tileDS[threadIdx.y + y][threadIdx.x + x];
+                if(min > tileDS[threadIdx.y + y][threadIdx.x + x])
+                    min = tileDS[threadIdx.y + y][threadIdx.x + x];
+            }
         }
     }
 

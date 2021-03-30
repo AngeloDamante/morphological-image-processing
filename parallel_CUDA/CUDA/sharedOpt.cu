@@ -29,7 +29,7 @@ const std::string outputPath = "/results_CUDA";
 int main(int argc, char const *argv[]) {
 
     Image *inputImg, *outputImg;
-    Probe *probe = new Square(MASK_RADIUS);
+    Probe *probe = new Square(1);
     std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::duration<double> span;
     std::ofstream resultsFile;
@@ -46,7 +46,6 @@ int main(int argc, char const *argv[]) {
             inputImg = new Image(pathImg);
             inputImg -> rgb2bw();
 
-            resultsFile << pathImg << "\n";
             for(const auto& op : MMoperations){
                 std::cout << op.second << " operation in ...";
 
@@ -54,7 +53,7 @@ int main(int argc, char const *argv[]) {
                 outputImg = mm(inputImg, probe, op.first, SHAREDOPT);
                 end = std::chrono::high_resolution_clock::now();
                 span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
-                // outputImg->saveImg("...");
+                // outputImg->saveImg("/images/test.png");
 
                 std::cout << span.count() <<std::endl;
                 resultsFile << pathImg << ";" << op.second << ";" << span.count() << "\n";
@@ -64,7 +63,6 @@ int main(int argc, char const *argv[]) {
         }else{
             std::cout << "\n" << "PROCESSING------->" << pathImg << std::endl;
         }
-
     }
 
     delete probe;

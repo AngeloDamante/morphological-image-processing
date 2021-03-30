@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(MM LANGUAGES CXX CUDA)
 set(CMAKE_CXX_STANDARD 17)
 
+## read env variable and set value for preprocessor
+add_definitions(-DTILE_WIDTH=$ENV{NUM_THREAD_PER_AXIS})
 
 ## libraries
 include_directories(tool images include results_CUDA)
