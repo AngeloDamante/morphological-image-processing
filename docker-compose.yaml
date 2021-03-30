@@ -50,6 +50,6 @@ services:
     stdin_open: true
     tty: true
     ipc: 'host'
-    depends_on:
-      - autoKernel
+    # depends_on:
+    #   - autoKernel
     # command: python3 /results_CUDA/test.py
