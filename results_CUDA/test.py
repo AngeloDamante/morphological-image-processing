@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import csv
 
 
@@ -43,15 +44,32 @@ def compute_speedup(seq_timing, par_timing):
     return np.divide(seq_timing, par_timing)
 #end
 
-## TODO: NOT YET FIISHED
-if __name__ == '__main__':
-    seq1, seq2, seq3, seq4, seq5 = extract_results('sequential_timings.csv')
-    nv1, nv2, nv3, nv4, nv5 = extract_results('naive_timing.csv')
-    opt1, opt2, opt3, opt4, opt5 = extract_results('optimized_timing.csv')
+def extract_speedups(tile_width, seq_version, par_version):
+    seq1, seq2, seq3, seq4, seq5 = extract_results(seq_version)
+    par1, par2, par3, par4, par5 = extract_results(par_version)
 
-    speedup1280x720 = compute_speedup(seq5, opt5)
-    # print(speedup1280x720)
-    print(seq4, opt4)
+    speedup1280x720 = compute_speedup(seq1, par1)
+    speedup1920x1080 = compute_speedup(seq2, par2)
+    speedup2560x1440 = compute_speedup(seq3, par3)
+    speedup3840x2160 = compute_speedup(seq4, par4)
+    speedup7680x4320 = compute_speedup(seq5, par5)
 
+    # TODO: compute mean!
+    # TODO: write on csv!
     pass
+#end
+
+if __name__ == '__main__':
+
+    tile_width = os.getenv('NUM_THREAD_PER_AXIS')
+
+    sequential_version = 'sequential_timings.csv'
+    naive_version = 'naive_timing.csv'
+    optimized_version = 'optimized_timing.csv'
+
+    extract_speedups(tile_width, sequential_version, naive_version)
+    extract_speedups(tile_width, sequential_version, optimized_version)
+
+    print("___completed___")
+
 # end
