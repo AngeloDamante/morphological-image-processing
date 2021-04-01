@@ -73,6 +73,7 @@ if __name__ == '__main__':
 
     # write on csv
     output_file = str(tile_width) + "TileWidthSpeedup.csv"
+    output_file = output_file if tile_width != None else "Speedup.csv"
     with open(output_file, 'w', newline='') as file:
         fieldnames = ['version', 'resolution'] + basic + composed
         writer = csv.DictWriter(file, fieldnames=fieldnames)
