@@ -1,0 +1,9 @@
+FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04 as base
+RUN apt-get update && apt-get install -y nano && apt-get install -y wget
+
+# Python
+ENV PYTHONPATH "${PYTHONPATH}:/results_CUDA"
+RUN apt install -y python3-pip && pip3 install numpy
+RUN pip3 install Pillow
+
+WORKDIR /results_CUDA

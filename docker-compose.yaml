@@ -43,13 +43,11 @@ services:
     container_name: 'evaluateSpeedup'
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: DockerfileForSpeedup
     image: base
     volumes:
       - ./results_CUDA:/results_CUDA
     stdin_open: true
     tty: true
     ipc: 'host'
-    # depends_on:
-    #   - autoKernel
-    # command: python3 /results_CUDA/test.py
+    command: python3 /results_CUDA/evaluate_speedup.py
