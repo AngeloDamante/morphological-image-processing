@@ -72,7 +72,8 @@ def compute_speedup(sequential, parallel, resolution):
                 - closing_mean (field float): mean value for closing op
                 - closing_max (field float): max value for closing op
     '''
-    print(f"Compute speedup for {parallel['version']} version with {resolution} resolution")
+    print(
+        f"Compute speedup for {parallel['version']} version with {resolution} resolution")
 
     # ndarray with 4 MM operations
     seq_timing = extract_values(sequential['file'], resolution)
@@ -97,7 +98,9 @@ def compute_speedup(sequential, parallel, resolution):
 
 if __name__ == '__main__':
     tile_width = os.getenv('NUM_THREAD_PER_AXIS')
-    print(f'Speedup with TILE_WIDTH = {tile_width} evaluating...')
+    
+    if tile_width != None:
+        print(f'Speedup with TILE_WIDTH = {tile_width} evaluating...')
 
     resolution = ['1280x720', '1920x1080', '2560x1440', '3840x2160', '7680x4320']
 
