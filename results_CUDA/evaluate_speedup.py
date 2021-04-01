@@ -1,9 +1,23 @@
+__author__ = 'Angelo D.Amante'
+__mail__ = 'angelo.damante16@gmail.com'
+
 import numpy as np
 import os
 import csv
 
 
 def extract_values(results_file, resolution):
+    '''
+    Extracts timings for each MM operation from csv file with chosen resolution.
+
+        Parameters:
+            results_file (str): name of csv file
+            resolution (str): for image 'widthxheight'
+
+        Returns:
+            timings (ndarray): Dilatation | Erosion | Opening | CLosing
+                there are more measurements to average out.
+    '''
     dilatation, erosion, closing, opening = [], [], [], []
 
     with open(results_file, mode='r') as csv_file:
@@ -33,6 +47,31 @@ def extract_values(results_file, resolution):
 
 
 def compute_speedup(sequential, parallel, resolution):
+    '''
+    Extracts mean and max speedup for chosen resolution.
+
+        Parameters:
+            sequential (dict):
+                - version (field str): version of sequential version
+                - file (field str): name of csv file
+            parallel (dict):
+                - version (field str): version of parallel version
+                - file (field str): name of csv file
+            resolution (str): widthxheight
+
+        Returns:
+            result (dict):
+                - version (field str): version of parallel computed
+                - resolution (field str): chosen resolution
+                - dilatation_mean (field float): mean value for dilatation op
+                - dilatation_max (field float): max value for dilatation op
+                - erosion_mean (field float): mean value for erosion op
+                - erosion_max (field float): max value for erosion op
+                - opening_mean (field float): mean value for opening op
+                - opening_max (field float): max value for opening op
+                - closing_mean (field float): mean value for closing op
+                - closing_max (field float): max value for closing op
+    '''
     print(f"Compute speedup for {parallel['version']} version with {resolution} resolution")
 
     # ndarray with 4 MM operations
@@ -45,12 +84,12 @@ def compute_speedup(sequential, parallel, resolution):
     max_speedup = np.max(speedup, axis=0)
 
     # results mining
-    result = {'version': parallel['version'], 'resolution':resolution,
-              'dilatation_mean':mean_speedup[0], 'dilatation_max':max_speedup[0],
-              'erosion_mean':mean_speedup[1], 'erosion_max':max_speedup[1],
-              'opening_mean':mean_speedup[2], 'opening_max':max_speedup[2],
-              'closing_mean':mean_speedup[3], 'closing_max':max_speedup[3]
-             }
+    result = {'version': parallel['version'], 'resolution': resolution,
+              'dilatation_mean': mean_speedup[0], 'dilatation_max': max_speedup[0],
+              'erosion_mean': mean_speedup[1], 'erosion_max': max_speedup[1],
+              'opening_mean': mean_speedup[2], 'opening_max': max_speedup[2],
+              'closing_mean': mean_speedup[3], 'closing_max': max_speedup[3]
+              }
 
     return result
 # end
@@ -63,9 +102,9 @@ if __name__ == '__main__':
     resolution = ['1280x720', '1920x1080', '2560x1440', '3840x2160', '7680x4320']
 
     # csv files
-    seq = {'version':'sequential', 'file':'sequential_timings.csv'}
-    naive = {'version':'naive', 'file':'naive_timing.csv'}
-    optimized = {'version':'optimized', 'file':'optimized_timing.csv'}
+    seq = {'version': 'sequential', 'file': 'sequential_timings.csv'}
+    naive = {'version': 'naive', 'file': 'naive_timing.csv'}
+    optimized = {'version': 'optimized', 'file': 'optimized_timing.csv'}
 
     # fields for results file
     basic = ['dilatation_mean', 'dilatation_max', 'erosion_mean', 'erosion_max']
