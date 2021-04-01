@@ -70,13 +70,17 @@ It's possible to process not default images and then evaluate speedup. But remem
 ```bash
 # After loading your own images in 'images' folder
 
-# 256 thread per block for example
-docker-compose run --rm -e NUM_THREAD_PER_AXIS=16 kernelMM
+# start container to process images
+docker-compose build kernelMM
+docker-compose run --rm -e NUM_THREAD_PER_AXIS=16 kernelMM  # 256 thread per block for example
 mkdir -p build
 cd build
 cmake .. && make
 
-# After run the three main builded, start container to evaluate speedup
+# run the three main just builded and exit from the container, 
+
+# start container to evaluate speedup
+docker-compose build evaluateSpeedup
 docker-compose run --rm evaluateSpeedup
 ```
 At the end, will be the speedups file.csv in results_CUDA folder.
