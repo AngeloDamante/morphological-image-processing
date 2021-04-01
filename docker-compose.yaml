@@ -1,7 +1,7 @@
 version: '3.7'
 services:
-  kernel_MM:
-    container_name: 'kernel_MM'
+  kernelMM:     # To use chosen images
+    container_name: 'kernelMM'
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,8 +19,8 @@ services:
       - nvcc-arch=sm_52 -v -Xcompiler="-pthread"
       - NUM_THREAD_PER_AXIS=32  #default value
 
-  autoKernel:
-    container_name: 'autoKernel'
+  autoKernelMM:     # To use default images
+    container_name: 'autoKernelMM'
     build:
       context: .
       dockerfile: DockerfileAutoKernel
@@ -39,7 +39,7 @@ services:
       - NUM_THREAD_PER_AXIS=32  #default value
     command: /autoKernelProcessing.sh
 
-  evaluateSpeedup:
+  evaluateSpeedup:      # After produced timings.csv
     container_name: 'evaluateSpeedup'
     build:
       context: .
