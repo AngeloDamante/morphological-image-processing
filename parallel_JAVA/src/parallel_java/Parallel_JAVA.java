@@ -10,7 +10,6 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -32,9 +31,8 @@ public class Parallel_JAVA {
         int[] threads_count = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 32, 64, 128};
 
         File images_folder = new File("../images/");
-        File[] listOfResolutions = images_folder.listFiles();
-        Arrays.sort(listOfResolutions);
-        List<String> resolutions = new ArrayList<String>();
+        File[] listOfResolutions = MYUtils.GetResolutionFiles(images_folder);
+        List<String> resolutions = new ArrayList<>();
         List<float[]> durations_total = new ArrayList<>(); //list of resolutions, each one have list of durations per thread 
         MorphOp operation = MorphOp.Dilation;
 
@@ -71,33 +69,7 @@ public class Parallel_JAVA {
             var mean_vals = getAvgFromMatrix(durations);
             durations_total.add(mean_vals);
         }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Resolution");
-        sb.append(",");
-        //Append Thread numbers as columns
-        for (int i = 0; i < threads_count.length; i++) {
-            sb.append(threads_count[i]);
-            if (i != threads_count.length - 1) {
-                sb.append(",");
-            }
-        }
-        sb.append("\n");
-        for (int i = 0; i < resolutions.size(); i++) {
-            sb.append(resolutions.get(i));
-            sb.append(",");
-            float[] values = durations_total.get(i);
-            for (int k = 0; k < values.length; k++) {
-                sb.append(values[k]);
-                if (k != values.length - 1) {
-                    sb.append(",");
-                }
-            }
-            sb.append("\n");
-        }
-        
-        MyCSVWriter.Write("../resuts_java.csv", sb);
-
+        MYUtils.SaveResultsToCSV(threads_count, resolutions, durations_total);
 
         //execute_multiple_threads(image_gs, MorphOp.Dilation);
         //execute_multiple_threads(image_gs, MorphOp.Erosion);
