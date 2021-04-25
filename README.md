@@ -87,6 +87,16 @@ At the end, will be the speedups file.csv in results_CUDA folder.
 
 Ctrl+D to exit from the container.
 
+## JAVA version
+
+Java version is located in parallel_JAVA folder. It is a NetBeans project.
+Just open it, build and run.
+
+It will output results from all resolution folders with all threads (from 1 to 12 and 16,32,64,128).
+Results can be viewed in results_java.csv file. All the stored info are milliseconds average times on all images of a particular resolution using a thread number.
+
+Speedups can be checked in the included paper as well as for the CUDA version.
+
 ## Authors
 + <a href="https://github.com/AngeloDamante"> Angelo D'Amante </a>
 + <a href="https://github.com/fabian57fabian"> Fabian Greavu </a>
