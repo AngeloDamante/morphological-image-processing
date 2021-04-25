@@ -1,4 +1,4 @@
-# Morphological Image Processing in Parallel Version.
+# Morphological Image Processing in Parallel Version
 Mathematical morphology (<a href="https://en.wikipedia.org/wiki/Mathematical_morphology">MM</a>) technique implemented in sequential and parallel methods for study purposes.
 
 ## Directories Layout
