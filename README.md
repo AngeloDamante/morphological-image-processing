@@ -25,6 +25,10 @@ Mathematical morphology (<a href="https://en.wikipedia.org/wiki/Mathematical_mor
 │   ├── evaluate_speedup.py # script to compute speedups
 │   ├── ...
 ├── parallel_JAVA           # handled by @Fabian Greavu
+│   ├── src                 
+│   │   ├── Parallel_Java.java
+│   │   ├── BinaryMaskApplier.java
+│   │   ├── ...
 ```
 
 ## Requirements 
