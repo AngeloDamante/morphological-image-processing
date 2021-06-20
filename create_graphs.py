@@ -22,7 +22,7 @@ def create_result_plot(fn:str, transpose=True, debug=False):
     if debug: print(df.columns)
     _type, _framework, _version, _operation = fn[:-4].split('_')
     ax = df.plot(title="{} for {} ({} version) on {} operation".format(_type, _framework, _version, _operation), marker='.', markersize=10, figsize=(12, 7))
-    x_label = ("Tile Width" if _framework == "cuda" else "Threads") if not transpose else "dataset size"
+    x_label = ("Tile Width" if _framework == "cuda" else "Threads") if transpose else "dataset size"
     ax.set_xlabel(x_label)
     ax.set_ylabel("Time (seconds)" if _type == "timings" else "Speedup value")
     if show_plots: plt.show()
