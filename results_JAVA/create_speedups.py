@@ -16,5 +16,5 @@ def create_speedups(fn: str, debug=False):
 
 
 if __name__ == '__main__':
-    create_speedups("timings_java_dilation.csv")
-    create_speedups("timings_java_erosion.csv")
+    create_speedups("timings_java_dilation_optimized.csv")
+    create_speedups("timings_java_erosion_optimized.csv")

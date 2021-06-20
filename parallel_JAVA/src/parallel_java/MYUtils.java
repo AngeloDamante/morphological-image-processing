@@ -42,7 +42,7 @@ public class MYUtils {
             sb.append("\n");
         }
         
-        MYUtils.Write("../results_JAVA/timings_java_"+(operation==MorphOp.Dilation ? "dilation" : "erosion")+".csv", sb);
+        MYUtils.Write("../results_JAVA/timings_java_"+(operation==MorphOp.Dilation ? "dilation" : "erosion")+"_optimized.csv", sb);
     }
     
     public static void Write(String filename, StringBuilder sb) {
