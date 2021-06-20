@@ -31,7 +31,9 @@ def convert_files(fns: list):
 
     for ver, d in datas.items():
         for op, datas_res in d.items():
-            with open("speedups_cuda_{}_{}.csv".format(ver, op), 'w') as file_naive_out:
+            out_fn = "speedups_cuda_{}_{}.csv".format(ver, op)
+            print(out_fn)
+            with open(out_fn, 'w') as file_naive_out:
                 spamwriter = csv.writer(file_naive_out, delimiter=',')
                 header = ["dataset"] + ["t{}".format(t) for t in tiles]
                 spamwriter.writerow(header)
