@@ -6,7 +6,7 @@ src_folder = "TMP"
 
 def convert_files(fns: list):
     datas = {"naive": {}, "optimized": {}}
-    operations = ["dilatation", "erosion", "opening", "closure"]
+    operations = ["dilatation"]
     for k, v in datas.items():
         for o in operations:
             v[o] = {}
@@ -20,7 +20,7 @@ def convert_files(fns: list):
             next(reader)  # skip header
             for row in reader:
                 if len(row) == 0: continue
-                version, resolution, dilatation_mean, dilatation_max, erosion_mean, erosion_max, opening_mean, opening_max, closing_mean, closing_max = row
+                version, resolution, dilatation = row
                 for i, op in enumerate(operations):
                     if resolution not in datas[version][op]:
                         datas[version][op][resolution] = []
