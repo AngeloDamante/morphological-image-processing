@@ -11,8 +11,8 @@ def create_combined(transpose:bool, debug=False):
     pd_2 = pd.read_csv("results_CUDA/speedups_cuda_optimized_dilatation.csv")
 
     df = pd.DataFrame(pd_1["dataset"])
-    df["naive_t24"] = pd_1["t24"]
-    df["optimized_t24"] = pd_2["t24"]
+    df["naive"] = pd_1["t24"]
+    df["optimized"] = pd_2["t24"]
 
     df.set_index("dataset", inplace=True)
     if debug: print(df.head())
@@ -20,7 +20,7 @@ def create_combined(transpose:bool, debug=False):
     if debug: print(df.head())
     if debug: print(df.columns)
 
-    ax = df.plot(title="NAive vs Optimized on tile_width=24", marker='.', markersize=10, figsize=(12, 7))
+    ax = df.plot(title="Naive vs Optimized on TW=24", marker='.', markersize=10, figsize=(12, 7))
     x_label = ("Tile Width") if transpose else "dataset size"
     ax.set_xlabel(x_label)
     ax.set_ylabel("Speedup value")
