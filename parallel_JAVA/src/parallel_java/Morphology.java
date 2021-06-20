@@ -6,6 +6,8 @@
 package parallel_java;
 //import java.lang.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -150,7 +152,7 @@ public class Morphology {
      * @param img The image on which dilation operation is performed
      * @return copy of dilated image
      */
-    public static MyOwnImage Dilation_grayscale(MyOwnImage img){
+    public static MyImageTime Dilation_grayscale(MyOwnImage img){
         return Dilation_grayscale(img, Runtime.getRuntime().availableProcessors()); //Assume majority of hardware have 4 cores at least
     }
     
@@ -161,7 +163,7 @@ public class Morphology {
      * @param num_ths Number of threads to start with
      * @return copy of dilated image
      */
-    public static MyOwnImage Dilation_grayscale(MyOwnImage img, int num_ths){
+    public static MyImageTime Dilation_grayscale(MyOwnImage img, int num_ths){
         return Dilation_grayscale(img, num_ths, new int[]{1,1,1,1,1,1,1,1,1}, 3);
     }
     
@@ -175,11 +177,11 @@ public class Morphology {
      * @param maskSize the size of the square mask. [i.e., number of rows]
      * @return copy of dilated image
      */
-    public static MyOwnImage Dilation_grayscale(MyOwnImage img, int num_ths, int mask[], int maskSize){
+    public static MyImageTime Dilation_grayscale(MyOwnImage img, int num_ths, int mask[], int maskSize){
         return ExecuteMaskOnImage(img, num_ths, mask, maskSize, MorphOp.Dilation);
     }
     
-    private static MyOwnImage ExecuteMaskOnImage(MyOwnImage img, int num_ths, int mask[], int maskSize, MorphOp operation){
+    private static MyImageTime ExecuteMaskOnImage(MyOwnImage img, int num_ths, int mask[], int maskSize, MorphOp operation){
         int width = img.getImageWidth();
         int height = img.getImageHeight();
         num_ths = checkThreadsNum(height, num_ths);
@@ -190,16 +192,21 @@ public class Morphology {
         int rows_per_thread = (int)Math.floor((double)(height/num_ths));
         
         //Populate pool
+        List<MaskApplier> masks = new ArrayList<>();
         for(int y = 0; y < height; y += rows_per_thread){
             MaskApplier t = new MaskApplier(img, output, y, Math.min(y + rows_per_thread, height), width, height, mask, maskSize, operation);
-            taskExecutor.execute(t);
+            masks.add(t);
+        }
+        float duration = System.nanoTime();;
+        for(int y = 0; y < masks.size(); y++){
+            taskExecutor.execute(masks.get(y));   
         }
         
         //Barrier
         waitExecutors(taskExecutor);
-        
+        duration = (System.nanoTime() - duration) / 1000000;
         //Copy results to new image
-        return CreateImage(new MyOwnImage(img), output);
+        return new MyImageTime(CreateImage(new MyOwnImage(img), output), duration);
     }
     
     /**
@@ -208,7 +215,7 @@ public class Morphology {
      * @param img The image on which dilation operation is performed
      * @return copy of dilated image
      */
-    public static MyOwnImage Erosion_grayscale(MyOwnImage img){
+    public static MyImageTime Erosion_grayscale(MyOwnImage img){
         return Erosion_grayscale(img, Runtime.getRuntime().availableProcessors()); //Assume majority of hardware have 4 cores at least
     }
     
@@ -219,7 +226,7 @@ public class Morphology {
      * @param num_ths Number of threads to start with
      * @return copy of dilated image
      */
-    public static MyOwnImage Erosion_grayscale(MyOwnImage img, int num_ths){
+    public static MyImageTime Erosion_grayscale(MyOwnImage img, int num_ths){
         return Erosion_grayscale(img, num_ths, new int[]{1,1,1,1,1,1,1,1,1}, 3);
     }
     
@@ -233,7 +240,7 @@ public class Morphology {
      * @param maskSize the size of the square mask. [i.e., number of rows]
      * @return copy of dilated image
      */
-    public static MyOwnImage Erosion_grayscale(MyOwnImage img, int num_ths, int mask[], int maskSize){
+    public static MyImageTime Erosion_grayscale(MyOwnImage img, int num_ths, int mask[], int maskSize){
         return ExecuteMaskOnImage(img, num_ths, mask, maskSize, MorphOp.Erosion);
     }
 }

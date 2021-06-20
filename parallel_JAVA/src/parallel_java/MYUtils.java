@@ -16,7 +16,7 @@ import java.util.List;
  * @author malega
  */
 public class MYUtils {
-    public static void SaveResultsToCSV(int[] threads_count, List<String> resolutions, List<float[]> durations_total ){
+    public static void SaveResultsToCSV(int[] threads_count, List<String> resolutions, List<float[]> durations_total, MorphOp operation ){
         
         StringBuilder sb = new StringBuilder();
         sb.append("Resolution");
@@ -42,7 +42,7 @@ public class MYUtils {
             sb.append("\n");
         }
         
-        MYUtils.Write("../resuts_java.csv", sb);
+        MYUtils.Write("../results_JAVA/timings_java_"+(operation==MorphOp.Dilation ? "dilation" : "erosion")+".csv", sb);
     }
     
     public static void Write(String filename, StringBuilder sb) {

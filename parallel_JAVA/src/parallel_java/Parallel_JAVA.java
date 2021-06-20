@@ -48,28 +48,29 @@ public class Parallel_JAVA {
                 MyOwnImage image_gs = new MyOwnImage();
                 String pth = Paths.get(images_folder.getPath(), folder_resolution.getName(), img.getName()).toString();
                 image_gs.readImage(pth);
-                long startTime, duration;
+                //long startTime, duration;
 
                 int[] mask = new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1};
                 int maskSize = 3;
                 System.out.println("Grayscale " + (operation == MorphOp.Dilation ? "Dilation:" : "Erosion:"));
                 System.out.println("| Threads  | Time (ms)|");
+                MyImageTime t;
                 for (int j = 0; j < threads_count.length; j++) {
-                    startTime = System.nanoTime();
+                    //startTime = System.nanoTime();
                     if (operation == MorphOp.Dilation) {
-                        Morphology.Dilation_grayscale(image_gs, threads_count[j], mask, maskSize);
+                        t = Morphology.Dilation_grayscale(image_gs, threads_count[j], mask, maskSize);
                     } else {
-                        Morphology.Erosion_grayscale(image_gs, threads_count[j], mask, maskSize);
+                        t = Morphology.Erosion_grayscale(image_gs, threads_count[j], mask, maskSize);
                     }
-                    duration = (System.nanoTime() - startTime) / 1000000;
-                    durations[i][j] = duration;
-                    System.out.println(String.format("|%10d|%10d|", threads_count[j], duration));
+                    //duration = (System.nanoTime() - startTime) / 1000000;
+                    durations[i][j] = t.duration;// duration;
+                    System.out.println(String.format("|%10d|%10f|", threads_count[j], t.duration));
                 }
             }
             var mean_vals = getAvgFromMatrix(durations);
             durations_total.add(mean_vals);
         }
-        MYUtils.SaveResultsToCSV(threads_count, resolutions, durations_total);
+        MYUtils.SaveResultsToCSV(threads_count, resolutions, durations_total, operation);
 
         //execute_multiple_threads(image_gs, MorphOp.Dilation);
         //execute_multiple_threads(image_gs, MorphOp.Erosion);
@@ -119,10 +120,13 @@ public class Parallel_JAVA {
         startTime = System.nanoTime();
         System.out.println("Grayscale " + (operation == MorphOp.Dilation ? "Dilation:" : "Erosion:"));
         System.out.println("| Threads  | Time (ms)|");
+        MyImageTime t;
         if (operation == MorphOp.Dilation) {
-            Morphology.Dilation_grayscale(image_gs).writeImage("dilated_grayscale_image.png");
+            t = Morphology.Dilation_grayscale(image_gs);
+            t.img.writeImage("dilated_grayscale_image.png");
         } else {
-            Morphology.Erosion_grayscale(image_gs).writeImage("eroded_grayscale_image.png");
+            t = Morphology.Erosion_grayscale(image_gs);
+            t.img.writeImage("eroded_grayscale_image.png");
         }
         duration = (System.nanoTime() - startTime);
         System.out.println(String.format("|%10d|%10d|", 1, duration / 1000000));
