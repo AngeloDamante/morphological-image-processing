@@ -35,7 +35,10 @@ public class Parallel_JAVA {
         List<String> resolutions = new ArrayList<>();
         List<float[]> durations_total = new ArrayList<>(); //list of resolutions, each one have list of durations per thread 
         MorphOp operation = MorphOp.Dilation;
-
+        if (args.length > 0)
+            if (args[0].charAt(0) == 'e' || args[0].charAt(0) == 'E')
+                operation = MorphOp.Erosion;
+        System.out.println("Choosen operation: "+operation.toString());
         for (File folder_resolution : listOfResolutions) {
             resolutions.add(folder_resolution.getName());
             System.out.println(folder_resolution.getName());
