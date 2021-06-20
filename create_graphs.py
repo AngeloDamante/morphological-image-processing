@@ -14,13 +14,13 @@ def create_result_plot(fn:str, transpose=True, debug=False):
         return
     if debug: print()
     print(fn)
+    _type, _framework, _version, _operation = fn[:-4].split('_')
     df = pd.read_csv(path)
-    df.set_index("dataset", inplace=True)
+    df.set_index("dataset" if _framework=="cuda" else "Resolution", inplace=True)
     if debug: print(df.head())
     if transpose: df = df.transpose()
     if debug: print(df.head())
     if debug: print(df.columns)
-    _type, _framework, _version, _operation = fn[:-4].split('_')
     ax = df.plot(title="{} for {} ({} version) on {} operation".format(_type, _framework, _version, _operation), marker='.', markersize=10, figsize=(12, 7))
     x_label = ("Tile Width" if _framework == "cuda" else "Threads") if transpose else "dataset size"
     ax.set_xlabel(x_label)
@@ -42,13 +42,20 @@ def create_plots():
 
 
 if __name__ == '__main__':
+    src_folder = 'results_CUDA'
+    out_folder = 'plots/CUDA'
     if not os.path.exists(out_folder):
         os.makedirs(out_folder)
-    #create_plots()
     for tr in [True, False]:
         for file in os.listdir(src_folder):
-            if '_' in file and file.endswith('.csv'):# filter only files created with convert script
+            if '_' in file and file.endswith('.csv'):
                 create_result_plot(file, tr)
-        #create_result_plot("speedups_cuda_shared.csv", tr)
-        #àcreate_result_plot("speedups_java_dynamic.csv", tr)
-        #create_result_plot("speedups_java_static.csv", tr)
+
+    src_folder = 'results_JAVA'
+    out_folder = 'plots/JAVA'
+    if not os.path.exists(out_folder):
+        os.makedirs(out_folder)
+    for tr in [True, False]:
+        for file in os.listdir(src_folder):
+            if '_' in file and file.endswith('.csv'):
+                create_result_plot(file, tr)
